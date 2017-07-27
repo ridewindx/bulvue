@@ -25,7 +25,7 @@
 
     <img src="./assets/logo.png">-->
 
-    <div class="block">
+    <!--<div class="block">
       <Button>Button</Button>
       <Button class="is-white">White</Button>
       <Button class="is-light">Light</Button>
@@ -45,9 +45,31 @@
     <Button icon="fa-github">Github</Button>
     <Button icon="fa-header" iconSize="is-small">Hello</Button>
     <Button icon="fa-header" iconPlacement="right">Hello</Button>
-    <Button icon="fa-header" iconPlacement="right" disabled>Hello</Button>
+    <Button icon="fa-header" iconPlacement="right" disabled>Hello</Button>-->
 
-    <router-view></router-view>
+    <!--<router-view></router-view>-->
+
+    <!--<div class="control">
+    <Radio name="Hello" :checked="hello" @change="val => { hello = val }" value="hello-1">Hello-1</Radio>
+    <Radio name="Hello" v-model="hello" value="hello-2">Hello-2</Radio>
+    </div>
+    <p>{{hello}}</p>-->
+
+    <RadioGroup>
+      <Radio name="HelloGroup" v-model="helloGroup" value="hello-1">Hello-1</Radio>
+      <Radio name="HelloGroup" v-model="helloGroup" value="hello-2">Hello-2</Radio>
+    </RadioGroup>
+    <p>{{helloGroup}}</p>
+
+    <CheckboxGroup v-model="checks">
+      <Checkbox value="check-1" disabled></Checkbox>
+      <Checkbox value="check-2" disabled></Checkbox>
+    </CheckboxGroup>
+    <p>{{checks}}</p>
+
+    <Checkbox v-model="check1" value="check-1" checked></Checkbox>
+    <p>{{check1}}</p>
+
   </div>
 </template>
 
@@ -60,9 +82,23 @@
   import CarouselItem from './components/carousel-item'
 
   import Button from './elements/button'
+  import Radio from './elements/form/radio'
+  import RadioGroup from './elements/form/radio-group'
+  import Checkbox from './elements/form/checkbox'
+  import CheckboxGroup from './elements/form/checkbox-group'
 
   export default {
     name: 'app',
+
+    data () {
+      return {
+        hello: 'hello-2',
+        helloGroup: 'hello-2',
+        checks: ['check-2'],
+        check1: null
+      }
+    },
+
     components: {
       Sidebar,
       Cols,
@@ -70,7 +106,11 @@
       Container,
       Carousel,
       CarouselItem,
-      Button
+      Button,
+      Radio,
+      RadioGroup,
+      Checkbox,
+      CheckboxGroup
     }
   }
 </script>

@@ -1,86 +1,118 @@
 <template>
-  <label class="radio">
+  <label class="radio"
+         :class="{
+                   'is-disabled': isDisabled,
+                   'is-checked': checked === value
+                 }">
 
-    <span class="radio-input"
-          :class="{
-                    'is-disabled': isDisabled,
-                    'is-checked': model === label,
-                    'is-focus': focus
-                  }">
+    <input
+           type="radio" :name="name" :value="value" :disabled="isDisabled"
+           @change="$emit('change', $event.target.value)">
 
-      <span class="radio-inner"></span>
-      <input type="radio" class="radio-original"
-             :name="name" :value="label"
-             :disabled="isDisabled"
-             v-model="model"
-             @focus="focus = true" @blur="focus = false">
+    <span></span>
 
-    </span>
-
-    <span class="radio-label">
-      <slot></slot>
-      <template v-if="!$slots.default">{{label}}</template>
-    </span>
+    <slot></slot>
+    <template v-if="!$slots.default">{{value}}</template>
 
   </label>
 </template>
 
 <script>
-  import Emit from '../../utils/emit.js'
-
   export default {
     name: 'Radio',
 
-    mixins: [{ methods: Emit }],
-
-    props: {
-      value: null,
-      label: null,
-      disabled: Boolean,
-      name: String
+    model: {
+      prop: 'checked',
+      event: 'change'
     },
 
-    data() {
-      return {
-        focus: false
-      };
+    props: {
+      checked: String,
+      value: {
+        type: String,
+        required: true
+      },
+      name: {
+        type: String,
+        required: true
+      },
+      disabled: Boolean
     },
 
     computed: {
-      isGrouped () {
-        let parent = this.$parent
-        while (parent) {
-          if (parent.$options.name !== 'RadioGroup') {
-            parent = parent.$parent
-          } else {
-            this.radioGroup = parent
-            return true
-          }
-        }
-        return false
-      },
-
-      model: {
-        get () {
-          return this.isGrouped ? this.radioGroup.value : this.value
-        },
-
-        set (val) {
-          if (this.isGrouped) {
-            this.emitUp('RadioGroup', 'input', val)
-          } else {
-            this.$emit('input', val)
-          }
-        }
-      },
-
       isDisabled () {
-        return (this.isGrouped && this.radioGroup.disabled) || this.disabled
+        return this.disabled
       }
     }
   }
 </script>
 
 <style lang="scss">
+  @import '~bulma/sass/utilities/_all';
+  @import '~bulma/sass/elements/form.sass';
 
+  label.radio {
+    user-select: none;
+
+    input {
+      opacity: 0;
+      outline: none;
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+
+    & > span {
+      position: relative;
+      display: inline-block;
+      width: 1.125em;
+      height: 1.125em;
+      box-sizing: border-box;
+      border-radius: 50%;
+      border: 1px solid $grey-light;
+      vertical-align: text-bottom;
+
+      &:hover {
+        border-color: $blue;
+      }
+
+      &:after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 0.375em;
+        height: 0.375em;
+        border-radius: 50%;
+        background-color: $white;
+
+        transform: translate(-50%, -50%) scale(0);
+      }
+    }
+
+    &.is-checked > span {
+      border-color: $blue;
+      background-color: $blue;
+      &:after {
+        transform: translate(-50%, -50%) scale(1);
+        transition: transform 0.15s cubic-bezier(.71,-.46,.88,.6);
+      }
+    }
+
+    &.is-disabled {
+      color: $grey-light;
+      cursor: not-allowed;
+
+      & > span {
+        border-color: $grey-light;
+        background-color: $grey-lighter;
+      }
+
+      &.is-checked > span {
+        border-color: $grey-light;
+        background-color: $grey-light;
+      }
+    }
+  }
 </style>
