@@ -55,7 +55,7 @@
     </div>
     <p>{{hello}}</p>-->
 
-    <RadioGroup>
+    <!--<RadioGroup>
       <Radio name="HelloGroup" v-model="helloGroup" value="hello-1">Hello-1</Radio>
       <Radio name="HelloGroup" v-model="helloGroup" value="hello-2">Hello-2</Radio>
     </RadioGroup>
@@ -68,7 +68,20 @@
     <p>{{checks}}</p>
 
     <Checkbox v-model="check1" value="check-1" checked></Checkbox>
-    <p>{{check1}}</p>
+    <p>{{check1}}</p>-->
+
+    <div class="field">
+      <Input type="email" input-class="is-primary" placeholder="Email" icon-left="fa-envelope" icon-right="fa-check" icon-class="is-small" disabled></Input>
+    </div>
+    <div class="field">
+      <Input type="password" class="is-loading" placeholder="Password" icon-left="fa-lock" icon-class="is-small"></Input>
+    </div>
+
+    <ScrollView>
+      <li>hello-1</li>
+      <li>hello-2</li>
+      <li>hello-3</li>
+    </ScrollView>
 
   </div>
 </template>
@@ -86,6 +99,9 @@
   import RadioGroup from './elements/form/radio-group'
   import Checkbox from './elements/form/checkbox'
   import CheckboxGroup from './elements/form/checkbox-group'
+  import Input from './elements/form/input'
+
+  import ScrollView from './elements/scrollview'
 
   export default {
     name: 'app',
@@ -110,7 +126,9 @@
       Radio,
       RadioGroup,
       Checkbox,
-      CheckboxGroup
+      CheckboxGroup,
+      Input,
+      ScrollView
     }
   }
 </script>
