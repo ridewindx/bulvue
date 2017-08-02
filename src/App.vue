@@ -84,7 +84,7 @@
       <Textarea placeholder="Primary textarea" textarea-class="is-info" disabled></Textarea>
     </div>-->
 
-    <Popover trigger="hover" title="提示标题" content="提示内容">
+    <!--<Popover trigger="hover" title="提示标题" content="提示内容">
       <Button>hover 激活</Button>
     </Popover>
     <Popover title="提示标题" content="提示内容">
@@ -168,7 +168,28 @@
       ok-text="确定"
       cancel-text="取消">
       <Button>国际化</Button>
-    </Popover>
+    </Popover>-->
+
+    <OnOff>
+      <span slot="open">开</span>
+      <span slot="close">关</span>
+    </OnOff>
+    <OnOff>
+      <Icon icon="fa-check" slot="open"></Icon>
+      <Icon icon="fa-close" slot="close"></Icon>
+    </OnOff>
+    <br><br>
+    <OnOff size="large">
+      <span slot="open">开启</span>
+      <span slot="close">关闭</span>
+    </OnOff>
+    <OnOff size="large">
+      <span slot="open">ON</span>
+      <span slot="close">OFF</span>
+    </OnOff>
+
+    <OnOff size="small"></OnOff>
+    <OnOff disabled></OnOff>
 
     <!--<ScrollView>
       <li>hello-1</li>
@@ -199,6 +220,8 @@
   import Button from './elements/button'
   import Input from './elements/form/input'
   import Popover from './elements/popover'
+
+  import OnOff from './elements/form/on-off'
 
   export default {
     name: 'app',
@@ -241,7 +264,8 @@
       ScrollView, */
       Button,
       Input,
-      Popover
+      Popover,
+      OnOff
     }
   }
 </script>
