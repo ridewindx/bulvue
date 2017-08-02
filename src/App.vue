@@ -70,24 +70,117 @@
     <Checkbox v-model="check1" value="check-1" checked></Checkbox>
     <p>{{check1}}</p>-->
 
-    <div class="field">
+    <!--<div class="field">
       <Input type="email" input-class="is-primary" placeholder="Email" icon-left="fa-envelope" icon-right="fa-check" icon-class="is-small" disabled></Input>
     </div>
     <div class="field">
       <Input type="password" class="is-loading" placeholder="Password" icon-left="fa-lock" icon-class="is-small"></Input>
     </div>
 
-    <ScrollView>
+    <div class="field">
+      <Textarea placeholder="Primary textarea" textarea-class="is-primary"></Textarea>
+    </div>
+    <div class="field">
+      <Textarea placeholder="Primary textarea" textarea-class="is-info" disabled></Textarea>
+    </div>-->
+
+    <Popover trigger="hover" title="提示标题" content="提示内容">
+      <Button>hover 激活</Button>
+    </Popover>
+    <Popover title="提示标题" content="提示内容">
+      <Button>click 激活</Button>
+    </Popover>
+    <Popover trigger="focus" title="提示标题" content="提示内容">
+      <Button>focus 激活</Button>
+    </Popover>
+    <Popover trigger="focus" title="提示标题" content="提示内容">
+      <Input placeholder="输入框的 focus"></Input>
+    </Popover>
+
+    <div class="top">
+      <Popover title="提示标题" content="提示内容" placement="top-start">
+        <Button>上左</Button>
+      </Popover>
+      <Popover title="提示标题" content="提示内容" placement="top">
+        <Button>上边</Button>
+      </Popover>
+      <Popover title="提示标题" content="提示内容" placement="top-end">
+        <Button>上右</Button>
+      </Popover>
+    </div>
+    <div class="center">
+      <div class="center-left">
+        <Popover title="提示标题" content="提示内容" placement="left-start">
+          <Button>左上</Button>
+        </Popover><br><br>
+        <Popover title="提示标题" content="提示内容" placement="left">
+          <Button>左边</Button>
+        </Popover><br><br>
+        <Popover title="提示标题" content="提示内容" placement="left-end">
+          <Button>左下</Button>
+        </Popover>
+      </div>
+      <div class="center-right">
+        <Popover title="提示标题" content="提示内容" placement="right-start">
+          <Button>右上</Button>
+        </Popover><br><br>
+        <Popover title="提示标题" content="提示内容" placement="right">
+          <Button>右边</Button>
+        </Popover><br><br>
+        <Popover title="提示标题" content="提示内容" placement="right-end">
+          <Button>右下</Button>
+        </Popover>
+      </div>
+    </div>
+    <div class="bottom">
+      <Popover title="提示标题" content="提示内容" placement="bottom-start">
+        <Button>下左</Button>
+      </Popover>
+      <Popover title="提示标题" content="提示内容" placement="bottom">
+        <Button>下边</Button>
+      </Popover>
+      <Popover title="提示标题" content="提示内容" placement="bottom-end">
+        <Button>下右</Button>
+      </Popover>
+    </div>
+
+    <Popover v-model="visible">
+      <a>click 激活</a>
+      <div slot="title"><i>自定义标题</i></div>
+      <div slot="content">
+        <a @click="close">关闭提示框</a>
+      </div>
+    </Popover>
+
+
+    <Popover
+      confirm
+      title="您确认删除这条内容吗？"
+      @ok="ok"
+      @cancel="cancel">
+      <Button>删除</Button>
+    </Popover>
+    <Popover
+      confirm
+      title="Are you sure delete this task?"
+      @ok="ok"
+      @cancel="cancel"
+      ok-text="确定"
+      cancel-text="取消">
+      <Button>国际化</Button>
+    </Popover>
+
+    <!--<ScrollView>
       <li>hello-1</li>
       <li>hello-2</li>
       <li>hello-3</li>
-    </ScrollView>
+    </ScrollView>-->
 
   </div>
 </template>
 
 <script>
-  import Sidebar from './components/Sidebar'
+  /* import Sidebar from './components/Sidebar'
   import Cols from './grid/columns'
   import Col from './grid/column'
   import Container from './layout/container'
@@ -99,9 +192,13 @@
   import RadioGroup from './elements/form/radio-group'
   import Checkbox from './elements/form/checkbox'
   import CheckboxGroup from './elements/form/checkbox-group'
-  import Input from './elements/form/input'
+  import Textarea from './elements/form/textarea'
 
-  import ScrollView from './elements/scrollview'
+  import ScrollView from './elements/scrollview' */
+
+  import Button from './elements/button'
+  import Input from './elements/form/input'
+  import Popover from './elements/popover'
 
   export default {
     name: 'app',
@@ -111,12 +208,25 @@
         hello: 'hello-2',
         helloGroup: 'hello-2',
         checks: ['check-2'],
-        check1: null
+        check1: null,
+        visible: false
+      }
+    },
+
+    methods: {
+      close () {
+        this.visible = false
+      },
+      ok () {
+        console.log('ok')
+      },
+      cancel () {
+        console.log('cancel')
       }
     },
 
     components: {
-      Sidebar,
+      /* Sidebar,
       Cols,
       Col,
       Container,
@@ -127,8 +237,11 @@
       RadioGroup,
       Checkbox,
       CheckboxGroup,
+      Textarea,
+      ScrollView, */
+      Button,
       Input,
-      ScrollView
+      Popover
     }
   }
 </script>

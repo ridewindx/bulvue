@@ -1,0 +1,79 @@
+@mixin popper($arrow, $arrow-width, $arrow-distance, $bg)
+  display: block
+  visibility: visible
+  font-size: 0.75rem
+  line-height: 1.5
+  position: absolute
+  z-index: 30
+
+  &[x-placement^="top"]
+    padding: $arrow-width 0 $arrow-distance 0
+
+  &[x-placement^="right"]
+    padding: 0 $arrow-width 0 $arrow-distance
+
+  &[x-placement^="bottom"]
+    padding: $arrow-distance 0 $arrow-width 0
+
+  &[x-placement^="left"]
+    padding: 0 $arrow-distance 0 $arrow-width
+
+  &[x-placement^="top"] #{$arrow}
+    bottom: $arrow-distance - $arrow-width
+    border-width: $arrow-width $arrow-width 0
+    border-top-color: $bg
+
+  &[x-placement="top"] #{$arrow}
+    left: 50%
+    margin-left: -$arrow-width
+
+  &[x-placement="top-start"] #{$arrow}
+    left: 1rem
+
+  &[x-placement="top-end"] #{$arrow}
+    right: 1rem
+
+  &[x-placement^="right"] #{$arrow}
+    left: $arrow-distance - $arrow-width
+    border-width: $arrow-width $arrow-width $arrow-width 0
+    border-right-color: $bg
+
+  &[x-placement="right"] #{$arrow}
+    top: 50%
+    margin-top: -$arrow-width
+
+  &[x-placement="right-start"] #{$arrow}
+    top: 0.5rem
+
+  &[x-placement="right-end"] #{$arrow}
+    bottom: 0.5rem
+
+  &[x-placement^="left"] #{$arrow}
+    right: $arrow-distance - $arrow-width
+    border-width: $arrow-width 0 $arrow-width $arrow-width
+    border-left-color: $bg
+
+  &[x-placement="left"] #{$arrow}
+    top: 50%
+    margin-top: -$arrow-width
+
+  &[x-placement="left-start"] #{$arrow}
+    top: 0.5rem
+
+  &[x-placement="left-end"] #{$arrow}
+    bottom: 0.5rem
+
+  &[x-placement^="bottom"] #{$arrow}
+    top: $arrow-distance - $arrow-width
+    border-width: 0 $arrow-width $arrow-width
+    border-bottom-color: $bg
+
+  &[x-placement="bottom"] #{$arrow}
+    left: 50%
+    margin-left: -$arrow-width
+
+  &[x-placement="bottom-start"] #{$arrow}
+    left: 1rem
+
+  &[x-placement="bottom-end"] #{$arrow}
+    right: 1rem
