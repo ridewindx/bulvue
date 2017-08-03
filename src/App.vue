@@ -170,7 +170,7 @@
       <Button>国际化</Button>
     </Popover>-->
 
-    <OnOff>
+    <!--<OnOff>
       <span slot="open">开</span>
       <span slot="close">关</span>
     </OnOff>
@@ -189,7 +189,77 @@
     </OnOff>
 
     <OnOff size="small"></OnOff>
-    <OnOff disabled></OnOff>
+    <OnOff disabled></OnOff>-->
+
+    <Alert>消息提示文案</Alert>
+    <Alert type="success">成功提示文案</Alert>
+    <Alert type="warning">警告提示文案</Alert>
+    <Alert type="error">错误提示文案</Alert>
+
+    <Alert>
+      消息提示文案
+      <template slot="desc">消息提示的描述文案消息提示的描述文案消息提示的描述文案消息提示的描述文案消息提示的描述文案</template>
+    </Alert>
+    <Alert type="success">
+      成功提示文案
+      <span slot="desc">成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案</span>
+    </Alert>
+    <Alert type="warning">
+      警告提示文案
+      <template slot="desc">
+        警告的提示描述文案警告的提示描述文案警告的提示描述文案
+      </template>
+    </Alert>
+    <Alert type="error">
+      错误提示文案
+      <span slot="desc">
+            自定义错误描述文案。
+        </span>
+    </Alert>
+
+
+    <Alert icon>消息提示文案</Alert>
+    <Alert type="success" icon>成功提示文案</Alert>
+    <Alert type="warning" icon>警告提示文案</Alert>
+    <Alert type="error" icon>错误提示文案</Alert>
+    <Alert icon>
+      消息提示文案
+      <template slot="desc">消息提示的描述文案消息提示的描述文案消息提示的描述文案消息提示的描述文案消息提示的描述文案</template>
+    </Alert>
+    <Alert type="success" icon>
+      成功提示文案
+      <span slot="desc">成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案</span>
+    </Alert>
+    <Alert type="warning" icon>
+      警告提示文案
+      <template slot="desc">
+        警告的提示描述文案警告的提示描述文案警告的提示描述文案
+      </template>
+    </Alert>
+    <Alert type="error" icon>
+      错误提示文案
+      <span slot="desc">
+            自定义错误描述文案。
+        </span>
+    </Alert>
+    <Alert icon>
+      自定义图标
+      <Icon icon="fa-github" size="is-medium" slot="icon"></Icon>
+      <template slot="desc">自定义图标文案自定义图标文案自定义图标文案自定义图标文案自定义图标文案</template>
+    </Alert>
+
+    <Alert closable>消息提示文案</Alert>
+    <Alert type="success" icon closable>
+      成功提示文案
+      <span slot="desc">成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案成功的提示描述文案</span>
+    </Alert>
+    <Alert type="warning" closable>
+      自定义关闭内容
+      <span slot="close">不再提示</span>
+    </Alert>
+
+    <Alert banner type="warning">通知：通知内容。。。</Alert>
+    <Alert banner closable type="warning">通知：通知内容。。。</Alert>
 
     <!--<ScrollView>
       <li>hello-1</li>
@@ -222,6 +292,9 @@
   import Popover from './elements/popover'
 
   import OnOff from './elements/form/on-off'
+
+  import Icon from './elements/icon'
+  import Alert from './elements/alert'
 
   export default {
     name: 'app',
@@ -265,7 +338,9 @@
       Button,
       Input,
       Popover,
-      OnOff
+      OnOff,
+      Icon,
+      Alert
     }
   }
 </script>

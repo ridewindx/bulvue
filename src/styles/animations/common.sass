@@ -1,0 +1,20 @@
+=motion-common
+  animation-duration: 0.3s
+  animation-fill-mode: both
+
+=make-motion($name, $keyframeName)
+  .#{$name}-enter-active, .#{$name}-appear
+    +motion-common
+    animation-play-state: paused
+
+  .#{$name}-leave-active
+    +motion-common()
+    animation-play-state: paused
+
+  .#{$name}-enter-active, .#{$name}-appear
+    animation-name: #{$keyframeName}In
+    animation-play-state: running
+
+  .#{$name}-leave-active
+    animation-name: #{$keyframeName}Out
+    animation-play-state: running

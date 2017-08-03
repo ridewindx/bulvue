@@ -1,0 +1,30 @@
+@import "common"
+
+=fade-motion($name, $keyframeName)
+  +make-motion($name, $keyframeName)
+  .#{$name}-enter-active, .#{$name}-appear
+    opacity: 0
+    animation-timing-function: linear
+
+  .#{$name}-leave-active
+    animation-timing-function: linear
+
+
+
+@include fade-motion(fade, fade)
+
+@keyframes fadeIn
+  0%
+    opacity: 0
+
+  100%
+    opacity: 1
+
+
+
+@keyframes fadeOut
+  0%
+    opacity: 1
+
+  100%
+    opacity: 0
