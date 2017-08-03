@@ -191,7 +191,7 @@
     <OnOff size="small"></OnOff>
     <OnOff disabled></OnOff>-->
 
-    <Alert>消息提示文案</Alert>
+    <!--<Alert>消息提示文案</Alert>
     <Alert type="success">成功提示文案</Alert>
     <Alert type="warning">警告提示文案</Alert>
     <Alert type="error">错误提示文案</Alert>
@@ -259,7 +259,54 @@
     </Alert>
 
     <Alert banner type="warning">通知：通知内容。。。</Alert>
-    <Alert banner closable type="warning">通知：通知内容。。。</Alert>
+    <Alert banner closable type="warning">通知：通知内容。。。</Alert>-->
+
+    <Cols>
+      <Col class="is-one-quarter">
+    <Card bordered>
+      <p slot="headerTitle">Component</p>
+      <Icon slot="headerExtra" icon="fa-angle-down"></Icon>
+      <Img slot="image" size="is-4by3" src="http://bulma.io/images/placeholders/1280x960.png" alt="Image"></Img>
+      <div>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Phasellus nec iaculis mauris. <a>@bulmaio</a>.
+      </div>
+      <template slot="footer">
+        <a>Save</a>
+        <a>Edit</a>
+        <a>Delete</a>
+      </template>
+    </Card>
+      </Col>
+
+      <Col>
+      <Card>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Phasellus nec iaculis mauris.
+      </Card>
+      </Col>
+
+      <Col>
+      <Card nohover>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Phasellus nec iaculis mauris.
+      </Card>
+      </Col>
+
+      <Col>
+      <Card noshadow>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Phasellus nec iaculis mauris.
+      </Card>
+      </Col>
+
+      <Col>
+      <Card bordered noshadow>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        Phasellus nec iaculis mauris.
+      </Card>
+      </Col>
+    </Cols>
 
     <!--<ScrollView>
       <li>hello-1</li>
@@ -271,7 +318,7 @@
 </template>
 
 <script>
-  /* import Sidebar from './components/Sidebar'
+  import Sidebar from './components/Sidebar'
   import Cols from './grid/columns'
   import Col from './grid/column'
   import Container from './layout/container'
@@ -285,9 +332,8 @@
   import CheckboxGroup from './elements/form/checkbox-group'
   import Textarea from './elements/form/textarea'
 
-  import ScrollView from './elements/scrollview' */
+  import ScrollView from './elements/scrollview'
 
-  import Button from './elements/button'
   import Input from './elements/form/input'
   import Popover from './elements/popover'
 
@@ -295,6 +341,9 @@
 
   import Icon from './elements/icon'
   import Alert from './elements/alert'
+
+  import Img from './elements/image'
+  import Card from './components/card'
 
   export default {
     name: 'app',
@@ -322,7 +371,7 @@
     },
 
     components: {
-      /* Sidebar,
+      Sidebar,
       Cols,
       Col,
       Container,
@@ -334,13 +383,14 @@
       Checkbox,
       CheckboxGroup,
       Textarea,
-      ScrollView, */
-      Button,
+      ScrollView,
       Input,
       Popover,
       OnOff,
       Icon,
-      Alert
+      Alert,
+      Img,
+      Card
     }
   }
 </script>
