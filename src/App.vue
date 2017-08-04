@@ -261,7 +261,7 @@
     <Alert banner type="warning">通知：通知内容。。。</Alert>
     <Alert banner closable type="warning">通知：通知内容。。。</Alert>-->
 
-    <Cols>
+    <!--<Cols>
       <Col class="is-one-quarter">
     <Card bordered>
       <p slot="headerTitle">Component</p>
@@ -306,7 +306,15 @@
         Phasellus nec iaculis mauris.
       </Card>
       </Col>
-    </Cols>
+    </Cols>-->
+
+    <Button @click="openMessage">Open message</Button>
+    <Button @click="closeMessages">Close messages</Button>
+    <Button @click="messageHandle()">Close success message</Button>
+    <Button @click="openNotify">Open notify</Button>
+    <Button @click="openNotifyContent">Open notify content</Button>
+    <Button @click="closeNotify">Close notify</Button>
+    <Button @click="notifyHandle()">Close success notify</Button>
 
     <!--<ScrollView>
       <li>hello-1</li>
@@ -345,6 +353,14 @@
   import Img from './elements/image'
   import Card from './components/card'
 
+  import Message from './components/message'
+  import Notification from './components/notification'
+
+  import Vue from 'vue'
+  Vue.prototype.$Message = Message
+  Vue.prototype.$Message.duration = 3
+  Vue.prototype.$Notification = Notification
+
   export default {
     name: 'app',
 
@@ -354,7 +370,9 @@
         helloGroup: 'hello-2',
         checks: ['check-2'],
         check1: null,
-        visible: false
+        visible: false,
+        messageHandle: null,
+        notifyHandle: null
       }
     },
 
@@ -367,6 +385,59 @@
       },
       cancel () {
         console.log('cancel')
+      },
+      openMessage () {
+        this.$Message.info({
+          content: '这是一条普通的提醒',
+          duration: 10,
+          closable: true
+        })
+        this.messageHandle = this.$Message.success({
+          content: '这是一条普通的提醒',
+          duration: 20
+        })
+        this.$Message.warning('这是一条普通的提醒')
+        this.$Message.error('这是一条普通的提醒')
+        this.$Message.loading('这是一条普通的提醒')
+      },
+      closeMessages () {
+        this.$Message.closeAll()
+      },
+      openNotify () {
+        this.$Notification.info({
+          title: '这是一条普通的提醒',
+          duration: 2,
+          closable: true
+        })
+        /* this.messageHandle = this.$Message.success({
+          content: '这是一条普通的提醒',
+          duration: 20
+        })
+        this.$Message.warning('这是一条普通的提醒')
+        this.$Message.error('这是一条普通的提醒')
+        this.$Message.loading('这是一条普通的提醒') */
+      },
+      openNotifyContent () {
+        this.$Notification.error({
+          title: '这是一条普通的提醒',
+          content: '这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒',
+          duration: 1.5,
+          closable: true
+        })
+        this.$Notification.open({
+          title: '这是一条普通的提醒',
+          content: '这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒这是一条普通的提醒',
+          duration: 3,
+          closable: true
+        })
+        this.$Notification.open({
+          title: '这是一条普通的提醒',
+          duration: 2,
+          closable: true
+        })
+      },
+      closeNotify () {
+        this.$Notification.closeAll()
       }
     },
 

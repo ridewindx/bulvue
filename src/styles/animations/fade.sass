@@ -2,6 +2,7 @@
 
 =fade-motion($name, $keyframeName)
   +make-motion($name, $keyframeName)
+
   .#{$name}-enter-active, .#{$name}-appear
     opacity: 0
     animation-timing-function: linear
@@ -11,7 +12,7 @@
 
 
 
-@include fade-motion(fade, fade)
++fade-motion(fade, fade)
 
 @keyframes fadeIn
   0%
