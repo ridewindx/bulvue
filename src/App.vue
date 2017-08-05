@@ -339,6 +339,15 @@
       <p>对话框内容</p>
     </Modal>
 
+    <div style="width: 500px; height: 200px; position: relative; border: 1px solid black;">
+      <Spin v-if="loading" text="加载中"></Spin>
+      <p>对话框内容</p>
+      <p>对话框内容</p>
+      <p>对话框内容</p>
+    </div>
+
+    <!--<Spin v-if="loading" text="加载中"></Spin>-->
+
     <!--<ScrollView>
       <li>hello-1</li>
       <li>hello-2</li>
@@ -385,6 +394,8 @@
   Vue.prototype.$Notification = Notification
 
   import Modal from './components/modal'
+
+  import Spin from './components/spin'
 
   export default {
     name: 'app',
@@ -497,7 +508,8 @@
       Alert,
       Img,
       Card,
-      Modal
+      Modal,
+      Spin
     }
   }
 </script>
