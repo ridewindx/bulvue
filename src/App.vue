@@ -308,13 +308,25 @@
       </Col>
     </Cols>-->
 
-    <Button @click="openMessage">Open message</Button>
+    <!--<Button @click="openMessage">Open message</Button>
     <Button @click="closeMessages">Close messages</Button>
     <Button @click="messageHandle()">Close success message</Button>
     <Button @click="openNotify">Open notify</Button>
     <Button @click="openNotifyContent">Open notify content</Button>
     <Button @click="closeNotify">Close notify</Button>
-    <Button @click="notifyHandle()">Close success notify</Button>
+    <Button @click="notifyHandle()">Close success notify</Button>-->
+
+
+    <Button type="primary" @click="modal1 = true">显示对话框</Button>
+    <Modal
+      v-model="modal1"
+      title="普通的Modal对话框标题"
+      @ok="ok"
+      @cancel="cancel">
+      <p>对话框内容</p>
+      <p>对话框内容</p>
+      <p>对话框内容</p>
+    </Modal>
 
     <!--<ScrollView>
       <li>hello-1</li>
@@ -361,6 +373,8 @@
   Vue.prototype.$Message.duration = 3
   Vue.prototype.$Notification = Notification
 
+  import Modal from './components/modal'
+
   export default {
     name: 'app',
 
@@ -372,7 +386,8 @@
         check1: null,
         visible: false,
         messageHandle: null,
-        notifyHandle: null
+        notifyHandle: null,
+        modal1: false
       }
     },
 
@@ -461,7 +476,8 @@
       Icon,
       Alert,
       Img,
-      Card
+      Card,
+      Modal
     }
   }
 </script>
