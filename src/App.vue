@@ -316,13 +316,24 @@
     <Button @click="closeNotify">Close notify</Button>
     <Button @click="notifyHandle()">Close success notify</Button>-->
 
+    <Button loading>加载中</Button>
+    <Button class="is-primary" :loading="loading" @click="loading = !loading">
+      <span v-if="!loading">Click me!</span>
+      <span v-else>Loading...</span>
+    </Button>
+    <Button class="is-warning" :loading="loading2" icon="fa-github" @click="loading2 = !loading2">
+      <span v-if="!loading2">Click me!</span>
+      <span v-else>Loading...</span>
+    </Button>
 
-    <Button type="primary" @click="modal1 = true">显示对话框</Button>
+
+    <Button @click="modal1 = true">显示对话框</Button>
     <Modal
+      loading
       v-model="modal1"
       title="普通的Modal对话框标题"
-      @ok="ok"
-      @cancel="cancel">
+      @ok="okModal"
+      @cancel="cancelModal">
       <p>对话框内容</p>
       <p>对话框内容</p>
       <p>对话框内容</p>
@@ -387,7 +398,9 @@
         visible: false,
         messageHandle: null,
         notifyHandle: null,
-        modal1: false
+        modal1: false,
+        loading: false,
+        loading2: false
       }
     },
 
@@ -453,6 +466,13 @@
       },
       closeNotify () {
         this.$Notification.closeAll()
+      },
+      okModal () {
+        console.log('ok')
+        setTimeout(() => { this.modal1 = false }, 2000)
+      },
+      cancelModal () {
+        console.log('cancel')
       }
     },
 

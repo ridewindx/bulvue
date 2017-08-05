@@ -72,19 +72,24 @@
 
     data () {
       return {
+        visible: this.value,
         okLoading: false
       }
     },
 
-    computed: {
-      visible () {
-        return this.value
-      }
-    },
-
     watch: {
-      visible (val) {
-        if (!val && this.okLoading) this.okLoading = false
+      value (val) {
+        if (!val) {
+          if (this.okLoading) {
+            this.okLoading = false
+            this.timer = setTimeout(() => { this.visible = false }, 100)
+          } else {
+            this.visible = false
+          }
+        } else {
+          if (this.timer) clearTimeout(this.timer)
+          this.visible = true
+        }
       },
       loading (val) {
         if (!val && this.okLoading) this.okLoading = false
@@ -111,7 +116,7 @@
       },
 
       esc (e) {
-        if (this.visible && this.closable && e.keyCode === 27) this.cancel()
+        if (this.value && this.closable && e.keyCode === 27) this.cancel()
       }
     },
 
@@ -130,10 +135,6 @@
   @import '~bulma/sass/components/modal';
   @import '../../styles/animations/ease';
   @import '../../styles/animations/fade';
-
-  .modal {
-    // z-index: -1;
-  }
 
   .modal-background {
     background-color: rgba($grey-darker, 0.6);
