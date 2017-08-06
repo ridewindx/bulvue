@@ -339,12 +339,14 @@
       <p>对话框内容</p>
     </Modal>
 
-    <div style="width: 500px; height: 200px; position: relative; border: 1px solid black;">
+    <div style="width: 500px; height: 2000px; position: relative; border: 1px solid black;">
       <Spin v-if="loading" text="加载中"></Spin>
       <p>对话框内容</p>
       <p>对话框内容</p>
       <p>对话框内容</p>
     </div>
+
+    <BackTop :scrollHeight="10"></BackTop>
 
     <!--<Spin v-if="loading" text="加载中"></Spin>-->
 
@@ -396,6 +398,8 @@
   import Modal from './components/modal'
 
   import Spin from './components/spin'
+
+  import BackTop from './components/back-top'
 
   export default {
     name: 'app',
@@ -509,7 +513,8 @@
       Img,
       Card,
       Modal,
-      Spin
+      Spin,
+      BackTop
     }
   }
 </script>
