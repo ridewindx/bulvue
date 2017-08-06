@@ -21,7 +21,7 @@ export default function scrollTop(el, from = 0, to, duration = 500) {
     }
 
     if (el === window) {
-      window.scrollTo(d, d);
+      window.scrollTo(0, d);
     } else {
       el.scrollTop = d;
     }

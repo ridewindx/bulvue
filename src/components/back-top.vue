@@ -1,14 +1,16 @@
 <template>
   <transition name="fade">
     <div class="back-top" :style="styles" v-show="visible" @click="backTop">
-      <Icon icon="fa-angle-up"></Icon>
+      <slot>
+        <Icon icon="fa-angle-up"></Icon>
+      </slot>
     </div>
   </transition>
 </template>
 
 <script>
   import Icon from '../elements/icon'
-  import scrollTop from '../utils/scroll-top'
+  import animation from '../utils/tween'
 
   export default {
     name: 'BackTop',
@@ -30,7 +32,7 @@
       },
       duration: {  // seconds
         type: Number,
-        default: 1
+        default: 0.5
       }
     },
 
@@ -51,7 +53,9 @@
 
     methods: {
       backTop () {
-        scrollTop(window, document.body.scrollTop, 0, this.duration * 1000)
+        animation(document.body.scrollTop, 0, this.duration, 'cubic.easeIn', val => {
+          window.scrollTo(0, val)
+        })
         this.$emit('click')
       },
 
