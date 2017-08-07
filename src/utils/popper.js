@@ -1,54 +1,44 @@
-import Vue from 'vue'
 import Popper from 'popper.js'
-
-const isServer = Vue.prototype.$isServer
 
 export default {
   props: {
+    value: Boolean,
     placement: {
       type: String,
       default: 'bottom'
     },
-    boundariesPadding: {
-      type: Number,
-      default: 5
-    },
-    reference: Object,
-    popper: Object,
-    offset: {
-      default: 0
-    },
-    value: {
-      type: Boolean,
-      default: false
-    },
-    transition: String,
+    offset: Number,
     options: {
       type: Object,
       default () {
         return {
           gpuAcceleration: false,
-          boundariesElement: 'body'    // todo 暂时注释，发现在 vue 2 里方向暂时可以自动识别了，待验证(还是有问题的)
+          boundariesElement: 'body',
+          boundariesPadding: 0,
+          forceAbsolute: true
         }
       }
     },
+    reference: Object,
+    popper: Object
   },
   data () {
     return {
-      visible: this.value
+      visible: this.value,
+      arbiter: null
     }
   },
   watch: {
     value: {
       immediate: true,
-      handler(val) {
+      handler (val) {
         this.visible = val
         this.$emit('input', val)
       }
     },
-    visible(val) {
+    visible (val) {
       if (val) {
-        this.updatePopper()
+        this.update()
       } else {
         this.$emit('popperhide')
       }
@@ -56,56 +46,50 @@ export default {
     }
   },
   methods: {
-    createPopper() {
-      if (isServer) return
+    update () {
+      if (this.arbiter) {
+        this.arbiter.update()
+        return
+      }
+
       if (!/^(top|bottom|left|right)(-start|-end)?$/g.test(this.placement)) {
         return
       }
 
-      const options = this.options
       const popper = this.popper || this.$refs.popper
       const reference = this.reference || this.$refs.reference
-
       if (!popper || !reference) return
 
-      if (this.popperJS && this.popperJS.hasOwnProperty('destroy')) {
-        this.popperJS.destroy()
-      }
-
+      const options = this.options
       options.placement = this.placement
       options.offset = this.offset
 
-      this.popperJS = new Popper(reference, popper, {
+      this.arbiter = new Popper(reference, popper, {
         ...options,
         onCreate: popper => {
           this.resetTransformOrigin(popper)
-          this.$nextTick(this.updatePopper)
+          this.$nextTick(this.update())
           this.$emit('created', this)
         }
       })
     },
-    updatePopper() {
-      if (isServer) return
-      this.popperJS ? this.popperJS.update() : this.createPopper()
+
+    destroy () {
+      if (this.arbiter) {
+        this.arbiter.destroy()
+        this.arbiter = null
+      }
     },
-    doDestroy() {
-      if (isServer) return
-      if (this.visible) return
-      this.popperJS.destroy()
-      this.popperJS = null
-    },
-    resetTransformOrigin(popper) {
-      if (isServer) return
+
+    resetTransformOrigin (popper) {
       let placementMap = {top: 'bottom', bottom: 'top', left: 'right', right: 'left'}
       let placement = popper.placement
       let origin = placementMap[placement]
-      popper.styles.transformOrigin = ['top', 'bottom'].indexOf(placement) > -1 ? `center ${ origin }` : `${ origin } center`
+      popper.styles.transformOrigin = ['top', 'bottom'].indexOf(placement) > -1 ? `center ${origin}` : `${origin} center`
     }
   },
-  beforeDestroy() {
-    if (isServer) return
-    if (this.popperJS) {
-      this.popperJS.destroy()
-    }
+
+  beforeDestroy () {
+    this.destroy()
   }
 }
