@@ -1,8 +1,8 @@
 function findChildComponents (vnode, childName) {
   const components = []
-  const childrens = vnode.$children
-  if (childrens.length) {
-    childrens.forEach(child => {
+  const children = vnode.$children
+  if (children.length) {
+    children.forEach(child => {
       if (child.$options.name === childName) {
         components.push(child)
       }

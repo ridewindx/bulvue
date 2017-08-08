@@ -1,6 +1,6 @@
 <template>
   <li class="option" :class="classes" v-show="visible"
-      @click="select" @mouseout="focused = false">
+      @click="select" @mouseenter="focus(true)" @mouseout="focus(false)">
     <slot>{{ label ? label : value }}</slot>
   </li>
 </template>
@@ -45,7 +45,17 @@
       select () {
         if (this.disabled) return
 
-        this.$emitUp('Select', 'selected', this.value)
+        this.emitUp('Select', 'selected', this.value)
+      },
+
+      focus (val) {
+        if (this.disabled) return
+
+        if (!val) {
+          this.focused = false
+        } else if (!this.focused) {
+          this.emitUp('Select', 'focused', this)
+        }
       }
     },
 

@@ -8,7 +8,7 @@ export default {
       default: 'bottom'
     },
     offset: Number,
-    options: {
+    conf: {
       type: Object,
       default () {
         return {
@@ -60,7 +60,7 @@ export default {
       const reference = this.reference || this.$refs.reference
       if (!popper || !reference) return
 
-      const options = this.options
+      const options = this.conf
       options.placement = this.placement
       options.offset = this.offset
 
