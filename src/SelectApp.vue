@@ -22,8 +22,15 @@
       <Select v-model="model7" style="width:200px" :options="cityList2" clearable>
       </Select>
     </Col>
-      <Col>
+    <Col>
       {{ cityList2 }}
+    </Col>
+    <Col>
+      <Select v-model="model10" multiple style="width:260px" :options="cityList2">
+      </Select>
+    </Col>
+      <Col>
+      {{ model10 }}
       </Col>
     </Cols>
   </div>
@@ -138,7 +145,8 @@
         model1: '',
         model5: '',
         model6: '',
-        model7: ''
+        model7: '',
+        model10: []
       }
     },
 

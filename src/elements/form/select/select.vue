@@ -5,9 +5,11 @@
 
       <span class="select-placeholder" v-show="!hasSelected">{{ placeholder }}</span>
 
-      <div class="select-multiple-selected" v-for="(label, index) in multipleSelected">
-        <span>{{ label }}</span>
-        <Icon icon="fa-times" @click="removeSelected(index)"></Icon>
+      <div class="select-multiple-selected">
+        <div class="select-multiple-selected-item" v-for="(label, index) in multipleSelected">
+          <span>{{ label }}</span>
+          <Icon icon="fa-times" @click.native.stop="removeSelected(index)"></Icon>
+        </div>
       </div>
 
       <span class="select-single-selected" v-show="!multiple && hasSelected && !filterable">{{ singleSelected }}</span>
@@ -22,8 +24,9 @@
     </div>
 
     <transition :name="dropdownTransition">
-      <div class="select-dropdown" ref="popper" v-show="showDropdown"
-           :style="{ width: dropdownWidth }" :placement="dropdownPlacement">
+      <Dropdown ref="popper" v-show="showDropdown"
+                :reference="$refs.reference" :popper="$refs.popper"
+                :width="dropdownWidth" :placement="dropdownPlacement">
 
         <ul v-if="Array.isArray(options)">
           <Option v-for="item in options" :label="item.label" :value="item.value" :key="item.value" :disabled="item.disabled"></Option>
@@ -41,7 +44,7 @@
 
         <ul class="select-loading" v-show="loading">{{ loadingText }}</ul>
 
-      </div>
+      </Dropdown>
     </transition>
 
   </div>
@@ -50,21 +53,23 @@
 
 <script>
   import isEmpty from 'lodash/isEmpty'
-  import Popper from '../../../utils/popper'
+  // import Popper from '../../../utils/popper'
   import ClickOutside from '../../../utils/click-outside'
   import Icon from '../../../elements/icon'
   import { findChildComponents } from '../../../utils/find'
+  // import { addResizeListener, removeResizeListener } from '../../../utils/resize-event'
+  import Dropdown from './dropdown'
   import OptGroup from './opt-group'
   import Option from './option'
 
   export default {
     name: 'Select',
 
-    mixins: [ Popper ],
+    // mixins: [ Popper ],
 
     directives: { ClickOutside },
 
-    components: { Icon, OptGroup, Option },
+    components: { Icon, Dropdown, OptGroup, Option },
 
     props: {
       options: [Array, Object],
@@ -142,6 +147,9 @@
     },
 
     watch: {
+      showDropdown (val) {
+      },
+
       options (val) {
         this.$nextTick(() => {
           this.updateOpts()
@@ -205,7 +213,9 @@
           this.focusedIndex = this.lastSelectedIndex
           this.opts.forEach(opt => { opt.focused = false })
           this.opts[this.focusedIndex].focused = true
-          this.$nextTick(this.scrollOption)
+          this.$nextTick(() => {
+            this.scrollOption()
+          })
         }
       },
 
@@ -269,7 +279,7 @@
       },
 
       scrollOption () {
-        const dropdown = this.$refs.popper
+        const dropdown = this.$refs.popper.$el
         const dropdownRect = dropdown.getBoundingClientRect()
         const optRect = this.opts[this.focusedIndex].$el.getBoundingClientRect()
         const bottomOverflow = optRect.bottom - dropdownRect.bottom
@@ -299,30 +309,36 @@
         }
 
         if (this.multiple) {
-          if (this.value.indexOf(value) < 0) {
+          const index = this.value.indexOf(value)
+          if (index < 0) {
             this.$emit('input', this.value.concat(value))
             opt.selected = true
-
-            this.update()
+          } else {
+            let v = this.value.slice()
+            v.splice(index, 1)
+            this.$emit('input', v)
+            opt.selected = false
           }
 
           if (this.filterable) {
             this.query = ''
             this.$refs.input.focus()
           }
-        } else if (value !== this.value) {
-          this.$emit('input', value)
+        } else {
+          this.hideDropdown()
 
-          for (const o of this.opts) o.selected = false
-          opt.selected = true
-          this.lastSelectedIndex = lastSelectedIndex
+          if (value !== this.value) {
+            this.$emit('input', value)
 
-          if (this.filterable) {
-            this.query = opt.label ? opt.label : opt.value
+            for (const o of this.opts) o.selected = false
+            opt.selected = true
+            this.lastSelectedIndex = lastSelectedIndex
+
+            if (this.filterable) {
+              this.query = opt.label ? opt.label : opt.value
+            }
           }
         }
-
-        this.hideDropdown()
       },
 
       showSelected () {
@@ -339,8 +355,12 @@
 
       removeSelected (index) {
         let value = this.value.slice()
-        value.splice(index, 1)
+        const v = value.splice(index, 1)[0]
         this.$emit('input', value)
+
+        for (let i = 0; i < this.opts.length; ++i) {
+          if (this.opts[i].value === v) this.opts[i].selected = false
+        }
 
         if (this.filterable) {
           this.$refs.input.focus()
@@ -352,6 +372,13 @@
         this.lastSelectedIndex = 0
         if (this.filterable) this.query = ''
         this.$emit('input', undefined)
+      },
+
+      handleResize () {
+        /* if (this.multiple) {
+          const ref = this.$refs.reference.$el
+
+        } */
       }
     },
 
@@ -364,6 +391,8 @@
       } else if (Array.isArray(this.value)) {
         this.value = this.value.length ? this.value[0] : undefined
       }
+
+      // addResizeListener(this.$el, this.handleResize)
 
       this.showSelected()
 
@@ -385,6 +414,7 @@
 
     beforeDestroy () {
       document.removeEventListener('keydown', this.handleKeydown)
+      // removeResizeListener(this.$el, this.handleResize)
     }
   }
 </script>
@@ -395,6 +425,7 @@
   @import "~bulma/sass/utilities/_all";
   @import "~bulma/sass/base/_all";
   @import "../../../styles/variables";
+  @import "../../../styles/animations/slide";
 
   .select {
     display: inline-block;
@@ -403,9 +434,10 @@
     vertical-align: middle;
     text-align: left;
     font-size: 0.75rem;
-    line-height: normal;
+    line-height: 1rem;
 
     &-selection {
+      position: relative;
       display: block;
       cursor: pointer;
       background-color: $white;
@@ -465,8 +497,9 @@
     }
 
     &-placeholder, &-single-selected {
-      // display: block;
-      vertical-align: middle;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -478,10 +511,9 @@
 
     &:not(.multiple) &-selection {
       position: relative;
-      height: 2rem;
+      height: 2.25rem;
 
       .select-placeholder, .select-single-selected {
-        line-height: 2rem;
         padding-left: 0.5rem;
         padding-right: 1.5rem;
       }
@@ -489,7 +521,7 @@
 
     &.multiple &-selection {
       padding: 0 1.5rem 0 0.25rem;
-      min-height: 2rem;
+      min-height: 2.25rem;
 
       .select-placeholder {
         padding-left: 0.25rem;
@@ -517,7 +549,25 @@
     }
 
     &-multiple-selected {
-      margin-right: 0.25rem;
+      margin: 0.125rem 0;
+    }
+
+    &-multiple-selected-item {
+      display: inline-block;
+      margin: 0.125rem 0.25rem 0.125rem 0;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid $grey-lighter;
+      border-radius: $radius;
+      background-color: $white-bis;
+
+      .fa {
+        color: $grey-light;
+        font-weight: lighter;
+
+        &:hover {
+          color: $grey;
+        }
+      }
     }
 
     &-dropdown {
@@ -570,15 +620,21 @@
       }
     }
 
-    &-multiple .option {
+    &.multiple .option {
       &.selected {
-        color: fade($blue, 0.1);
+        color: lighten($blue, 10%);
         background-color: $white;
 
+        &:hover, &.focused {
+          background-color: $white-ter;
+        }
+
         &:after {
+          float: right;
           @include fa-icon;
           content: $fa-var-check;
-          font-size: 1.5rem;
+          font-size: 0.875rem;
+          color: lighten($blue, 25%);
         }
       }
     }

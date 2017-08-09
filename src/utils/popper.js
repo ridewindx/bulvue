@@ -19,8 +19,8 @@ export default {
         }
       }
     },
-    reference: Object,
-    popper: Object
+    reference: null,
+    popper: null
   },
   data () {
     return {
