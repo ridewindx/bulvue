@@ -1,7 +1,7 @@
 <template>
   <li class="option" :class="classes" v-show="visible"
       @click="select" @mouseenter="focus(true)" @mouseout="focus(false)">
-    <slot>{{ label ? label : value }}</slot>
+    {{ label }}
   </li>
 </template>
 

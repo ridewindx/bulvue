@@ -1,5 +1,5 @@
 <template>
-  <li class="opt-group">
+  <li class="opt-group" v-show="visible">
     <div class="opt-group-label">{{ label }}</div>
     <ul class="opt-group-options">
       <slot></slot>
@@ -13,6 +13,12 @@
 
     props: {
       label: String
+    },
+
+    data () {
+      return {
+        visible: true
+      }
     }
   }
 </script>

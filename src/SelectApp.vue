@@ -33,6 +33,18 @@
       {{ model10 }}
       </Col>
     </Cols>
+    <Cols>
+      <Col>
+      <Select v-model="model11" filterable style="width:260px" :options="cityList">
+      </Select>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+    </Cols>
   </div>
 </template>
 
@@ -146,7 +158,8 @@
         model5: '',
         model6: '',
         model7: '',
-        model10: []
+        model10: [],
+        model11: []
       }
     },
 

@@ -1,11 +1,14 @@
 <template>
-  <div class="select" :class="classes" v-click-outside="hideDropdown">
+  <div class="select" :class="classes" v-click-outside="hideDropdown" :tabindex="tabindex"
+       @keydown.enter.prevent="handleKeydownEnter"
+       @keydown.tab="hideDropdown" @keydown.esc="hideDropdown"
+       @keydown.down.prevent="handleKeydownArrow('down')" @keydown.up.prevent="handleKeydownArrow('up')">
 
     <div class="select-selection" ref="reference" @click="toggleDropdown">
 
-      <span class="select-placeholder" v-show="!hasSelected">{{ placeholder }}</span>
+      <span class="select-placeholder" v-show="!hasSelected && !filterable">{{ placeholder }}</span>
 
-      <div class="select-multiple-selected">
+      <div class="select-multiple-selected" v-if="multipleSelected.length">
         <div class="select-multiple-selected-item" v-for="(label, index) in multipleSelected">
           <span>{{ label }}</span>
           <Icon icon="fa-times" @click.native.stop="removeSelected(index)"></Icon>
@@ -15,8 +18,9 @@
       <span class="select-single-selected" v-show="!multiple && hasSelected && !filterable">{{ singleSelected }}</span>
 
       <input type="text" class="select-input" ref="input" v-if="filterable"
-             v-model="query" :placeholder="!hasSelected ? placeholder : ''">
-             <!--@blur="handleBlur" @keydown="" @keydown.delete="">-->
+             v-model="query" :placeholder="!hasSelected ? placeholder : ''"
+             @focus="handleFocus" @blur="handleBlur" @keydown.esc="hideDropdown">
+             <!--@keydown="" @keydown.delete="">-->
 
       <Icon icon="fa-times-circle" class="icon-clear" v-show="showClearIcon" @click.native.stop="clearSingleSelected"></Icon>
       <Icon icon="fa-caret-down" class="icon-arrow"></Icon>
@@ -24,7 +28,7 @@
     </div>
 
     <transition :name="dropdownTransition">
-      <Dropdown ref="popper" v-show="showDropdown"
+      <Dropdown ref="popper" v-show="dropdownVisible"
                 :reference="$refs.reference" :popper="$refs.popper"
                 :width="dropdownWidth" :placement="dropdownPlacement">
 
@@ -38,7 +42,7 @@
           </OptGroup>
         </ul>
 
-        <ul class="select-not-found" v-show="showNotFound">
+        <ul class="select-not-found" v-show="notFound">
           <li>{{ notFoundText }}</li>
         </ul>
 
@@ -56,7 +60,7 @@
   // import Popper from '../../../utils/popper'
   import ClickOutside from '../../../utils/click-outside'
   import Icon from '../../../elements/icon'
-  import { findChildComponents } from '../../../utils/find'
+  import { findChildComponents, findParentComponent } from '../../../utils/find'
   // import { addResizeListener, removeResizeListener } from '../../../utils/resize-event'
   import Dropdown from './dropdown'
   import OptGroup from './opt-group'
@@ -109,6 +113,8 @@
         multipleSelected: [],
         singleSelected: null,
         query: '',
+        queryResultIndex: -1,
+        queryFromInput: true,
         notFound: false,
         focusedIndex: 0,
         lastSelectedIndex: 0
@@ -119,14 +125,15 @@
       classes () {
         return {
           'disabled': this.disabled,
-          'dropdown-shown': this.showDropdown,
+          'dropdown-shown': this.dropdownVisible,
           'multiple': this.multiple,
           'clear-icon-shown': this.showClearIcon
         }
       },
 
-      showDropdown () {
-        return this.dropdownVisible && (!isEmpty(this.options) || this.loading || (this.fetchFunc && !this.query))
+      tabindex () {
+        if (this.filterable || this.disabled) return -1
+        else return 0
       },
 
       hasSelected () {
@@ -139,17 +146,10 @@
 
       dropdownTransition () {
         return this.dropdownPlacement === 'bottom' ? 'slide-up' : 'slide-down'
-      },
-
-      showNotFound () {
-        return this.notFound
       }
     },
 
     watch: {
-      showDropdown (val) {
-      },
-
       options (val) {
         this.$nextTick(() => {
           this.updateOpts()
@@ -161,8 +161,6 @@
       },
 
       value (val) {
-        if (!val) return
-
         if (this.multiple) {
           if (!Array.isArray(val)) return
 
@@ -177,9 +175,13 @@
           }
           this.multipleSelected = multipleSelected
         } else {
+          if (!val) return
+
           for (const opt of this.opts) {
             if (val === opt.value) {
               this.singleSelected = opt.label
+              if (this.filterable) this.query = opt.label
+              break
             }
           }
         }
@@ -187,6 +189,11 @@
 
       query (val) {
         this.$emit('queryChanged', val)
+
+        if (!this.queryFromInput) {
+          this.queryFromInput = true
+          return
+        }
 
         if (this.fetchFunc) {
           if (!val) {
@@ -200,7 +207,36 @@
             })
           }
         } else {
+          if (!this.dropdownVisible) this.showDropdown()
 
+          val = val.replace(/(\^|\(|\)|\[|\]|\$|\*|\+|\.|\?|\\|\{|\}|\|)/g, '\\$1')
+          const re = new RegExp(val, 'i')
+          let groups = new Set(this.optGroups)
+          let firstOptIndex
+          for (let i = 0; i < this.opts.length; ++i) {
+            const opt = this.opts[i]
+            if (re.test(opt.label)) {
+              let group = findParentComponent(opt, 'OptGroup')
+              if (group && groups.has(group)) {
+                group.visible = true
+                groups.delete(group)
+              }
+              opt.visible = true
+              if (firstOptIndex === undefined) firstOptIndex = i
+              else if (this.lastSelectedIndex === i) firstOptIndex = i
+            } else {
+              opt.visible = false
+            }
+          }
+          groups.forEach(group => { group.visible = false })
+          if (firstOptIndex !== undefined) {
+            this.navigateOption('down', firstOptIndex)
+            this.notFound = false
+            this.queryResultIndex = firstOptIndex
+          } else {
+            this.notFound = true
+            this.queryResultIndex = -1
+          }
         }
       }
     },
@@ -208,12 +244,23 @@
     methods: {
       toggleDropdown () {
         if (this.disabled) return
-        this.dropdownVisible = !this.dropdownVisible
+
+        if (this.dropdownVisible) this.hideDropdown()
+        else this.showDropdown()
+      },
+
+      showDropdown () {
+        if (this.dropdownVisible) return
+        if (this.disabled) return
+        if (!(!isEmpty(this.options) || this.loading || (this.fetchFunc && !this.query))) return
+
+        this.dropdownVisible = true
         if (this.dropdownVisible) {
           this.focusedIndex = this.lastSelectedIndex
           this.opts.forEach(opt => { opt.focused = false })
           this.opts[this.focusedIndex].focused = true
           this.$nextTick(() => {
+            if (!this.filterable) this.setOptsVisible()
             this.scrollOption()
           })
         }
@@ -222,6 +269,17 @@
       hideDropdown () {
         if (!this.dropdownVisible) return
         this.dropdownVisible = false
+
+        if (this.queryResultIndex > -1) {
+          if (!this.multiple) {
+            const opt = this.opts[this.queryResultIndex]
+            if (this.queryResultIndex !== this.lastSelectedIndex) {
+              this.selectOption(opt.value)
+            }
+            this.queryFromInput = false
+            this.query = opt.label
+          }
+        }
       },
 
       updateOpts () {
@@ -229,41 +287,38 @@
         this.optGroups = findChildComponents(this, 'OptGroup')
       },
 
-      handleKeydown (e) {
-        if (!this.dropdownVisible) return
-
-        let prevent = true
-
-        switch (e.keyCode) {
-          case 27:
-            this.hideDropdown()
-            break
-          case 40:
-            this.navigateOption('down')
-            break
-          case 38:
-            this.navigateOption('up')
-            break
-          case 13:
-            this.selectOption()
-            break
-          default:
-            prevent = false
-            break
-        }
-
-        if (prevent) e.preventDefault()
+      setOptsVisible () {
+        this.opts.forEach(opt => { opt.visible = true })
+        this.optGroups.forEach(group => { group.visible = true })
       },
 
-      navigateOption (direction) {
+      handleKeydownEnter () {
+        if (!this.dropdownVisible) this.showDropdown()
+        else this.selectOption()
+
+        if (this.filterable) this.$refs.input.focus()
+      },
+
+      handleKeydownArrow (direction) {
+        if (!this.dropdownVisible) this.showDropdown()
+        else this.navigateOption(direction)
+
+        if (this.filterable) this.$refs.input.focus()
+      },
+
+      navigateOption (direction, index) {
         const opts = this.opts
 
-        if (direction === 'down') {
-          if (this.focusedIndex >= opts.length - 1) this.focusedIndex = 0
-          else ++this.focusedIndex
-        } else if (direction === 'up') {
-          if (this.focusedIndex <= 0) this.focusedIndex = opts.length - 1
-          else --this.focusedIndex
+        if (index === undefined) {
+          if (direction === 'down') {
+            if (this.focusedIndex >= opts.length - 1) this.focusedIndex = 0
+            else ++this.focusedIndex
+          } else if (direction === 'up') {
+            if (this.focusedIndex <= 0) this.focusedIndex = opts.length - 1
+            else --this.focusedIndex
+          }
+        } else {
+          this.focusedIndex = index
         }
 
         opts.forEach(opt => { opt.focused = false })
@@ -333,10 +388,6 @@
             for (const o of this.opts) o.selected = false
             opt.selected = true
             this.lastSelectedIndex = lastSelectedIndex
-
-            if (this.filterable) {
-              this.query = opt.label ? opt.label : opt.value
-            }
           }
         }
       },
@@ -374,29 +425,39 @@
         this.$emit('input', undefined)
       },
 
-      handleResize () {
-        /* if (this.multiple) {
-          const ref = this.$refs.reference.$el
+      handleFocus () {
+      },
 
-        } */
+      handleBlur () {
+      }
+    },
+
+    created () {
+      if (Array.isArray(this.options)) {
+        for (let option of this.options) {
+          if (option.label === undefined) option.label = option.value
+        }
+      } else {
+        for (let optGroupLabel in this.options) {
+          for (let option of this.options[optGroupLabel]) {
+            if (option.label === undefined) option.label = option.value
+          }
+        }
+      }
+
+      if (this.multiple) {
+        if (!Array.isArray(this.value)) {
+          if (this.value === undefined) this.$emit('input', [])
+          else this.$emit('input', [this.value])
+        }
+      } else if (Array.isArray(this.value)) {
+        let value = this.value.length ? this.value[0] : undefined
+        this.$emit('input', value)
       }
     },
 
     mounted () {
-      if (this.multiple) {
-        if (!Array.isArray(this.value)) {
-          if (this.value === undefined) this.value = []
-          else this.value = [this.value]
-        }
-      } else if (Array.isArray(this.value)) {
-        this.value = this.value.length ? this.value[0] : undefined
-      }
-
-      // addResizeListener(this.$el, this.handleResize)
-
       this.showSelected()
-
-      document.addEventListener('keydown', this.handleKeydown)
 
       this.$on('selected', this.selectOption)
 
@@ -410,11 +471,6 @@
       })
 
       this.updateOpts()
-    },
-
-    beforeDestroy () {
-      document.removeEventListener('keydown', this.handleKeydown)
-      // removeResizeListener(this.$el, this.handleResize)
     }
   }
 </script>
@@ -532,12 +588,14 @@
     &-input {
       position: relative;
       display: inline-block;
-      height: 2rem;
+      height: calc(2.25rem - 2px);
       padding: 0 1.5rem 0 0.5rem;
       box-sizing: border-box;
-      outline: none;
       border: none;
+      outline: none;
       background-color: transparent;
+      cursor: pointer;
+      font-size: 0.75rem;
 
       @include placeholder {
         color: $grey;
@@ -587,6 +645,10 @@
     &-not-found, &-loading {
       text-align: center;
       color: $grey;
+
+      li {
+        padding: 0.2rem 0 0.2rem 0;
+      }
     }
 
     .opt-group-label {
