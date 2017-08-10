@@ -8,19 +8,16 @@
 
       <span class="select-placeholder" v-show="!hasSelected && !filterable">{{ placeholder }}</span>
 
-      <div class="select-multiple-selected" v-if="multipleSelected.length">
-        <div class="select-multiple-selected-item" v-for="(label, index) in multipleSelected">
-          <span>{{ label }}</span>
-          <Icon icon="fa-times" @click.native.stop="removeSelected(index)"></Icon>
-        </div>
+      <div class="select-multiple-selected" v-for="(label, index) in multipleSelected">
+        <span>{{ label }}</span>
+        <Icon icon="fa-times" @click.native.stop="removeSelected(index)"></Icon>
       </div>
 
       <span class="select-single-selected" v-show="!multiple && hasSelected && !filterable">{{ singleSelected }}</span>
 
       <input type="text" class="select-input" ref="input" v-if="filterable"
              v-model="query" :placeholder="!hasSelected ? placeholder : ''"
-             @focus="handleFocus" @blur="handleBlur" @keydown.esc="hideDropdown">
-             <!--@keydown="" @keydown.delete="">-->
+             @focus="handleFocus" @blur="handleBlur" @keydown.esc="hideDropdown" @keydown.delete="handleKeydownDelete">
 
       <Icon icon="fa-times-circle" class="icon-clear" v-show="showClearIcon" @click.native.stop="clearSingleSelected"></Icon>
       <Icon icon="fa-caret-down" class="icon-arrow"></Icon>
@@ -46,8 +43,6 @@
           <li>{{ notFoundText }}</li>
         </ul>
 
-        <ul class="select-loading" v-show="loading">{{ loadingText }}</ul>
-
       </Dropdown>
     </transition>
 
@@ -57,19 +52,15 @@
 
 <script>
   import isEmpty from 'lodash/isEmpty'
-  // import Popper from '../../../utils/popper'
   import ClickOutside from '../../../utils/click-outside'
   import Icon from '../../../elements/icon'
   import { findChildComponents, findParentComponent } from '../../../utils/find'
-  // import { addResizeListener, removeResizeListener } from '../../../utils/resize-event'
   import Dropdown from './dropdown'
   import OptGroup from './opt-group'
   import Option from './option'
 
   export default {
     name: 'Select',
-
-    // mixins: [ Popper ],
 
     directives: { ClickOutside },
 
@@ -86,12 +77,6 @@
         default: '请选择'
       },
       filterable: Boolean,
-      fetchFunc: Function,
-      loading: Boolean,
-      loadingText: {
-        type: String,
-        default: '加载中'
-      },
       notFoundText: {
         type: String,
         default: '无匹配数据'
@@ -117,7 +102,8 @@
         queryFromInput: true,
         notFound: false,
         focusedIndex: 0,
-        lastSelectedIndex: 0
+        lastSelectedIndex: 0,
+        inputFocused: false
       }
     },
 
@@ -127,7 +113,8 @@
           'disabled': this.disabled,
           'dropdown-shown': this.dropdownVisible,
           'multiple': this.multiple,
-          'clear-icon-shown': this.showClearIcon
+          'clear-icon-shown': this.showClearIcon,
+          'input-focused': this.inputFocused
         }
       },
 
@@ -153,11 +140,8 @@
       options (val) {
         this.$nextTick(() => {
           this.updateOpts()
+          this.showDropdown(true)
         })
-        if (Array.isArray(val)) {
-        } else {
-
-        }
       },
 
       value (val) {
@@ -195,48 +179,35 @@
           return
         }
 
-        if (this.fetchFunc) {
-          if (!val) {
-            this.options = []
-          } else {
-            this.loading = true
-            this.fetchFunc(val, options => {
-              this.loading = false
-              this.focusedIndex = 0
-              this.options = options
-            })
-          }
-        } else {
-          if (!this.dropdownVisible) this.showDropdown()
+        if (!this.dropdownVisible) this.showDropdown()
 
-          val = val.replace(/(\^|\(|\)|\[|\]|\$|\*|\+|\.|\?|\\|\{|\}|\|)/g, '\\$1')
-          const re = new RegExp(val, 'i')
-          let groups = new Set(this.optGroups)
-          let firstOptIndex
-          for (let i = 0; i < this.opts.length; ++i) {
-            const opt = this.opts[i]
-            if (re.test(opt.label)) {
-              let group = findParentComponent(opt, 'OptGroup')
-              if (group && groups.has(group)) {
-                group.visible = true
-                groups.delete(group)
-              }
-              opt.visible = true
-              if (firstOptIndex === undefined) firstOptIndex = i
-              else if (this.lastSelectedIndex === i) firstOptIndex = i
-            } else {
-              opt.visible = false
+        val = val.replace(/(\^|\(|\)|\[|\]|\$|\*|\+|\.|\?|\\|\{|\}|\|)/g, '\\$1')
+        const re = new RegExp(val, 'i')
+        let groups = new Set(this.optGroups)
+        let firstOptIndex
+        for (let i = 0; i < this.opts.length; ++i) {
+          const opt = this.opts[i]
+          if (re.test(opt.label)) {
+            let group = findParentComponent(opt, 'OptGroup')
+            if (group && groups.has(group)) {
+              group.visible = true
+              groups.delete(group)
             }
-          }
-          groups.forEach(group => { group.visible = false })
-          if (firstOptIndex !== undefined) {
-            this.navigateOption('down', firstOptIndex)
-            this.notFound = false
-            this.queryResultIndex = firstOptIndex
+            opt.visible = true
+            if (firstOptIndex === undefined) firstOptIndex = i
+            else if (this.lastSelectedIndex === i) firstOptIndex = i
           } else {
-            this.notFound = true
-            this.queryResultIndex = -1
+            opt.visible = false
           }
+        }
+        groups.forEach(group => { group.visible = false })
+        if (firstOptIndex !== undefined) {
+          this.navigateOption('down', firstOptIndex)
+          this.notFound = false
+          this.queryResultIndex = firstOptIndex
+        } else {
+          this.notFound = true
+          this.queryResultIndex = -1
         }
       }
     },
@@ -252,10 +223,11 @@
       showDropdown () {
         if (this.dropdownVisible) return
         if (this.disabled) return
-        if (!(!isEmpty(this.options) || this.loading || (this.fetchFunc && !this.query))) return
+        if (isEmpty(this.options)) return
 
         this.dropdownVisible = true
-        if (this.dropdownVisible) {
+
+        if (this.opts.length) {
           this.focusedIndex = this.lastSelectedIndex
           this.opts.forEach(opt => { opt.focused = false })
           this.opts[this.focusedIndex].focused = true
@@ -270,14 +242,25 @@
         if (!this.dropdownVisible) return
         this.dropdownVisible = false
 
-        if (this.queryResultIndex > -1) {
+        if (this.filterable) {
+          let query
           if (!this.multiple) {
-            const opt = this.opts[this.queryResultIndex]
-            if (this.queryResultIndex !== this.lastSelectedIndex) {
-              this.selectOption(opt.value)
+            if (this.queryResultIndex > -1) {
+              const opt = this.opts[this.queryResultIndex]
+              if (this.queryResultIndex !== this.lastSelectedIndex) {
+                this.selectOption(opt.value)
+              }
+              query = opt.label
+            } else if (this.query) {
+              query = this.opts[this.lastSelectedIndex].label
             }
+          } else {
+            query = ''
+          }
+
+          if (query !== undefined && query !== this.query) {
             this.queryFromInput = false
-            this.query = opt.label
+            this.query = query
           }
         }
       },
@@ -304,6 +287,12 @@
         else this.navigateOption(direction)
 
         if (this.filterable) this.$refs.input.focus()
+      },
+
+      handleKeydownDelete () {
+        if (!this.query && this.multiple && this.value.length) {
+          this.removeSelected(this.value.length - 1)
+        }
       },
 
       navigateOption (direction, index) {
@@ -426,9 +415,11 @@
       },
 
       handleFocus () {
+        this.inputFocused = true
       },
 
       handleBlur () {
+        this.inputFocused = false
       }
     },
 
@@ -485,12 +476,17 @@
 
   .select {
     display: inline-block;
+    outline: none;
     width: 100%;
     box-sizing: border-box;
     vertical-align: middle;
     text-align: left;
     font-size: 0.75rem;
     line-height: 1rem;
+
+    &:focus &-selection, &.input-focused &-selection {
+      border-color: $grey-light;
+    }
 
     &-selection {
       position: relative;
@@ -576,7 +572,10 @@
     }
 
     &.multiple &-selection {
-      padding: 0 1.5rem 0 0.25rem;
+      display: flex;
+      width: 100%;
+      flex-wrap: wrap;
+      padding: 0.125rem 1.5rem 0.125rem 0.25rem;
       min-height: 2.25rem;
 
       .select-placeholder {
@@ -589,7 +588,7 @@
       position: relative;
       display: inline-block;
       height: calc(2.25rem - 2px);
-      padding: 0 1.5rem 0 0.5rem;
+      margin: 0 1.5rem 0 0.5rem;
       box-sizing: border-box;
       border: none;
       outline: none;
@@ -603,14 +602,17 @@
     }
 
     &:not(.multiple) &-input {
-      width: 100%;
+      width: calc(100% - 2rem);
+    }
+
+    &.multiple &-input {
+      flex-grow: 1;
+      flex-basis: 4rem;
+      min-width: 4rem;
+      margin: 0 0 0 0.25rem;
     }
 
     &-multiple-selected {
-      margin: 0.125rem 0;
-    }
-
-    &-multiple-selected-item {
       display: inline-block;
       margin: 0.125rem 0.25rem 0.125rem 0;
       padding: 0.25rem 0.5rem;
@@ -642,7 +644,7 @@
       box-shadow: $shadow-down;
     }
 
-    &-not-found, &-loading {
+    &-not-found {
       text-align: center;
       color: $grey;
 

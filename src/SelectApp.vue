@@ -39,6 +39,19 @@
       </Select>
       </Col>
       <Col>
+      <Select v-model="model12" filterable multiple style="width:260px" :options="cityList">
+      </Select>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+    </Cols>
+    <Cols>
+      <Col>
+      </Col>
+      <Col>
+        {{ model13 }}
       </Col>
       <Col>
       </Col>
@@ -159,11 +172,49 @@
         model6: '',
         model7: '',
         model10: [],
-        model11: []
+        model11: [],
+        model12: [],
+        model13: '',
+        model14: [],
+        loadOptions1: [],
+        loadOptions2: []
       }
     },
 
     methods: {
+      load1 (val) {
+        setTimeout(() => {
+          this.loadOptions1 = [
+            {
+              value: 'beijing',
+              label: '北京市'
+            },
+            {
+              value: 'shanghai',
+              label: '上海市'
+            },
+            {
+              value: 'shenzhen',
+              label: '深圳市'
+            },
+            {
+              value: 'hangzhou',
+              label: '杭州市'
+            },
+            {
+              value: 'nanjing',
+              label: '南京市'
+            },
+            {
+              value: 'chongqing',
+              label: '重庆市'
+            }
+          ]
+        }, 300)
+      },
+
+      load2 (val) {
+      }
     },
 
     components: {
