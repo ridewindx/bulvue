@@ -2,9 +2,11 @@ import Popper from 'popper.js'
 
 export default {
   props: {
-    value: Boolean,
     placement: {
       type: String,
+      validator (v) {
+        return /^(top|bottom|left|right)(-start|-end)?$/g.test(v)
+      },
       default: 'bottom'
     },
     offset: Number,
@@ -22,37 +24,23 @@ export default {
     reference: null,
     popper: null
   },
+
   data () {
     return {
-      visible: this.value,
-      arbiter: null
+      visible: false
     }
   },
+
   watch: {
-    value: {
-      immediate: true,
-      handler (val) {
-        this.visible = val
-        this.$emit('input', val)
-      }
-    },
     visible (val) {
-      if (val) {
-        this.update()
-      } else {
-        this.$emit('popperhide')
-      }
-      this.$emit('input', val)
+      if (val) this.update()
     }
   },
+
   methods: {
     update () {
       if (this.arbiter) {
         this.arbiter.update()
-        return
-      }
-
-      if (!/^(top|bottom|left|right)(-start|-end)?$/g.test(this.placement)) {
         return
       }
 
@@ -69,16 +57,8 @@ export default {
         onCreate: popper => {
           this.resetTransformOrigin(popper)
           this.$nextTick(this.update())
-          this.$emit('created', this)
         }
       })
-    },
-
-    destroy () {
-      if (this.arbiter) {
-        this.arbiter.destroy()
-        this.arbiter = null
-      }
     },
 
     resetTransformOrigin (popper) {
@@ -90,6 +70,9 @@ export default {
   },
 
   beforeDestroy () {
-    this.destroy()
+    if (this.arbiter) {
+      this.arbiter.destroy()
+      this.arbiter = null
+    }
   }
 }

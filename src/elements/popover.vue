@@ -96,6 +96,12 @@
       }
     },
 
+    data () {
+      return {
+        visible: false
+      }
+    },
+
     methods: {
       handleClick () {
         if (this.trigger === 'click') this.visible = !this.visible
