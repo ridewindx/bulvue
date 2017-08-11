@@ -57,6 +57,9 @@
       },
       step: {
         type: Number,
+        validator (v) {
+          return v > 0
+        },
         default: 1
       },
       disabled: Boolean
@@ -75,8 +78,8 @@
       value: {
         immediate: true,
         handler (val) {
-          this.upDisabled = val + this.step > this.max
-          this.downDisabled = val - this.step < this.min
+          this.upDisabled = sum(val, this.step) > this.max
+          this.downDisabled = sum(val, -this.step) < this.min
         }
       }
     },
@@ -97,7 +100,8 @@
 
           if (val > this.max) val = this.max
           else if (val < this.min) val = this.min
-          this.setValue(val)
+
+          if (val !== this.value) this.setValue(val)
         } else {
           val = this.value
         }
@@ -121,6 +125,10 @@
         this.setValue(val)
         this.input = val
       }
+    },
+
+    created () {
+      console.assert(this.max > this.min)
     }
   }
 </script>

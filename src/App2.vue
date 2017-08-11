@@ -13,6 +13,19 @@
       <Col>
       </Col>
     </Cols>
+
+    <Cols>
+      <Col>
+      <Slider v-model="value11"></Slider>
+      <Slider v-model="value12" range></Slider>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+    </Cols>
   </div>
 </template>
 
@@ -20,6 +33,7 @@
   import Cols from './grid/columns'
   import Col from './grid/column'
   import InputNumber from './elements/form/input-number'
+  import Slider from './components/slider'
 
   export default {
     name: 'app',
@@ -28,7 +42,9 @@
       return {
         value1: 1,
         value2: 1,
-        value6: 1
+        value6: 1,
+        value11: 25,
+        value12: [20, 50]
       }
     },
 
@@ -41,7 +57,8 @@
     components: {
       Cols,
       Col,
-      InputNumber
+      InputNumber,
+      Slider
     }
   }
 </script>
