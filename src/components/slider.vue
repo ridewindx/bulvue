@@ -10,19 +10,21 @@
 
       <div class="slider-bar" :style="barStyle" @click.self="handleClick"></div>
 
-      <Tooltip class="slider-button-tooltip" :style="{ left: firstPos + '%' }"
-               placement="top" :content="formatTip(range ? value[0] : value)"
-               :disabled="showTip === 'never'" :always="showTip === 'always' || firstHeld === true"
-               @mousedown.prevent="firstDragStart">
-        <div class="slider-button" :class="{ dragging: firstHeld }"></div>
-      </Tooltip>
+      <div class="slider-button-wrap" @mousedown.prevent="firstDragStart" :style="{ 'z-index': firstHeld ? 1 : 0, left: firstPos + '%' }">
+        <Tooltip ref="first"
+                 :content="formatTip(firstValue)" :disabled="showTip === 'never'"
+                 :always="showTip === 'always' || firstHeld" placement="top">
+          <div class="slider-button" :class="{ dragging: firstHeld }"></div>
+        </Tooltip>
+      </div>
 
-      <Tooltip class="slider-button-tooltip" :style="{ left: secondPos + '%' }" v-if="range"
-               placement="top" :content="formatTip(value[1])"
-               :disabled="showTip === 'never'" :always="showTip === 'always' || secondHeld === true"
-               @mousedown.prevent="secondDragStart">
-        <div class="slider-button" :class="{ dragging: secondHeld }"></div>
-      </Tooltip>
+      <div class="slider-button-wrap" @mousedown.prevent="secondDragStart" :style="{ 'z-index': secondHeld ? 1 : 0, left: secondPos + '%' }">
+        <Tooltip ref="second" v-if="range"
+                 :content="formatTip(secondValue)" :disabled="showTip === 'never'"
+                 :always="showTip === 'always' || secondHeld" placement="top">
+          <div class="slider-button" :class="{ dragging: secondHeld }"></div>
+        </Tooltip>
+      </div>
 
     </div>
 
@@ -85,22 +87,19 @@
 
     data () {
       return {
+        firstValue: 0,
+        secondValue: 0,
+        sliderWidth: 0,
         draggingNo: null,
         firstPos: 0,
         secondPos: 0,
-        firstHeld: false,
-        secondHeld: false,
         startX: 0,
-        currentX: 0
+        startFirstPos: 0,
+        startSecondPos: 0
       }
     },
 
     computed: {
-      sliderWidth () {
-        // return parseInt(getStyle(this.$refs.slider, 'width'), 10);
-        return this.$refs.slider.clientWidth
-      },
-
       stops () {
         let count = (this.max - this.min) / this.step
         let stops = []
@@ -122,6 +121,22 @@
             width: (this.value - this.min) / (this.max - this.min) * 100 + '%'
           }
         }
+      },
+
+      firstHeld () {
+        return this.draggingNo === FIRST
+      },
+
+      secondHeld () {
+        return this.draggingNo === SECOND
+      }
+    },
+
+    watch: {
+      value: {
+        immediate: true,
+        handler (val) {
+        }
       }
     },
 
@@ -129,86 +144,108 @@
       handleClick (e) {
         if (this.disabled) return
 
+        this.sliderWidth = this.$refs.slider.clientWidth
         const newPos = (e.clientX - this.$refs.slider.getBoundingClientRect().left) / this.sliderWidth * 100
 
         if (this.range && newPos > this.firstPos && (newPos - this.firstPos) > (this.secondPos - newPos)) {
-          this.changePos(SECOND, newPos)
+          this.draggingNo = SECOND
         } else {
-          this.changePos(FIRST, newPos)
+          this.draggingNo = FIRST
         }
+        this.changePos(newPos)
+        this.draggingNo = null
       },
 
       handleInput (val) {
         const newPos = (val - this.min) / (this.max - this.min) * 100
-        this.changePos(FIRST, newPos)
+        this.draggingNo = FIRST
+        this.changePos(newPos)
+        this.draggingNo = null
       },
 
       firstDragStart (e) {
-        this.dragStart(FIRST, e)
+        this.draggingNo = FIRST
+        this.dragStart(e)
       },
 
       secondDragStart (e) {
-        this.dragStart(SECOND, e)
+        this.draggingNo = SECOND
+        this.dragStart(e)
       },
 
-      dragStart (no, e) {
-        if (no === FIRST) this.firstHeld = true
-        else if (no === SECOND) this.secondHeld = true
+      dragStart (e) {
+        this.sliderWidth = this.$refs.slider.clientWidth
         this.startX = e.clientX
+        this.startFirstPos = this.firstPos
+        this.startSecondPos = this.secondPos
 
-        const dragging = this.dragging.bind(this, no)
-
-        window.addEventListener('mousemove', dragging)
-
-        const dragEnd = () => {
-          if (no === FIRST) {
-            if (!this.firstHeld) return
-            this.firstHeld = false
-          } else if (no === SECOND) {
-            if (!this.secondHeld) return
-            this.secondHeld = false
-          }
-          window.removeEventListener('mousemove', dragging)
-          window.removeEventListener('mouseup', dragEnd)
-        }
-        window.addEventListener('mouseup', dragEnd)
+        window.addEventListener('mousemove', this.dragging)
+        window.addEventListener('mouseup', this.dragEnd)
       },
 
-      dragging (no, e) {
-        if (no === FIRST && !this.firstHeld) return
-        else if (no === SECOND && !this.secondHeld) return
+      dragEnd () {
+        if (this.draggingNo === FIRST) this.$refs.first.hidePopper()
+        else if (this.draggingNo === SECOND) this.$refs.second.hidePopper()
+        this.draggingNo = null
 
-        this.currentX = e.clientX
-        const diff = (this.currentX - this.startX) / this.sliderWidth * 100
-        let newPos = this.firstPos + diff
+        window.removeEventListener('mousemove', this.dragging)
+        window.removeEventListener('mouseup', this.dragEnd)
+      },
+
+      dragging (e) {
+        const diff = (e.clientX - this.startX) / this.sliderWidth * 100
+
+        let startPos
+        if (this.draggingNo === FIRST) startPos = this.startFirstPos
+        else if (this.draggingNo === SECOND) startPos = this.startSecondPos
+
+        let newPos = startPos + diff
         if (newPos < 0) newPos = 0
-        else if (no === FIRST && newPos > this.secondPos) newPos = this.secondPos
-        else if (no === SECOND && newPos < this.firstPos) newPos = this.firstPos
+        else if (newPos > 100) newPos = 100
 
-        this.changePos(no, newPos)
+        this.changePos(newPos)
       },
 
-      changePos (no, newPos) {
+      changePos (newPos) {
         const currentValue = Math.round(newPos / 100 * (this.max - this.min) / this.step) * this.step + this.min
         const pos = (currentValue - this.min) / (this.max - this.min) * 100
-        if (no === FIRST) {
+        if (this.draggingNo === FIRST) {
           this.firstPos = pos
-          if (this.range) {
-            if (currentValue !== this.value[0]) {
-              this.$emit('input', [currentValue, this.value[1]])
-            }
-          } else {
-            if (currentValue !== this.value) {
-              this.$emit('input', currentValue)
-            }
-          }
-          this.$emit('input', this.range ? [currentValue, this.value[1]] : currentValue)
-        } else if (no === SECOND) {
+          this.firstValue = currentValue
+        } else if (this.draggingNo === SECOND) {
           this.secondPos = pos
-          if (currentValue !== this.value[1]) {
-            this.$emit('input', [this.value[0], currentValue])
+          this.secondValue = currentValue
+        }
+
+        this.changeValue()
+      },
+
+      changeValue () {
+        if (!this.range) {
+          if (this.firstValue !== this.value[0]) {
+            this.$emit('input', this.firstValue)
+          }
+        } else if (this.firstValue > this.secondValue) {
+          if (this.secondValue !== this.value[0] || this.firstValue !== this.value[1]) {
+            this.$emit('input', [this.secondValue, this.firstValue])
+          }
+        } else {
+          if (this.firstValue !== this.value[0] || this.secondValue !== this.value[1]) {
+            this.$emit('input', [this.firstValue, this.secondValue])
           }
         }
+      }
+    },
+
+    created () {
+      if (!this.range) {
+        this.firstValue = this.value
+        this.firstPos = (this.value - this.min) / (this.max - this.min) * 100
+      } else {
+        this.firstValue = this.value[0]
+        this.secondValue = this.value[1]
+        this.firstPos = (this.value[0] - this.min) / (this.max - this.min) * 100
+        this.secondPos = (this.value[1] - this.min) / (this.max - this.min) * 100
       }
     }
   }
@@ -228,16 +265,21 @@
       cursor: pointer;
     }
 
-    &-button-tooltip {
+    &-button-wrap {
       position: absolute;
       width: 0.75rem;
       height: 0.75rem;
-      text-align: center;
       top: 50%;
       transform: translateY(-50%) translateX(-50%);
 
-      .tooltip-rel {
-        display: block;
+      .tooltip {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%) translateX(-50%);
+
+        .tooltip-rel {
+          display: block;
+        }
       }
     }
 
