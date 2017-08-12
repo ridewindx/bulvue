@@ -5,10 +5,12 @@
            @keydown.up.prevent="up" @keydown.down.prevent="down">
 
     <div class="input-number-handler">
-      <div class="input-number-handler-up" :class="{ disabled: upDisabled }" @click="up">
+      <div class="input-number-handler-up" :class="{ disabled: upDisabled || disabled }"
+           v-repeat-click="up">
         <Icon icon="fa-angle-up"></Icon>
       </div>
-      <div class="input-number-handler-down" :class="{ disabled: downDisabled }" @click="down">
+      <div class="input-number-handler-down" :class="{ disabled: downDisabled || disabled }"
+           v-repeat-click="down">
         <Icon icon="fa-angle-down"></Icon>
       </div>
     </div>
@@ -16,6 +18,7 @@
 </template>
 
 <script>
+  import { once } from '../../utils/event'
   import Icon from '../icon'
 
   function isNumber (str) {
@@ -39,6 +42,32 @@
 
   export default {
     name: 'InputNumber',
+
+    directives: {
+      repeatClick: {
+        bind (el, binding, vnode) {
+          let interval = null
+          let startTime
+          const handler = () => vnode.context[binding.expression].apply()
+
+          const clear = () => {
+            if (new Date() - startTime < 100) {
+              handler()
+            }
+            clearInterval(interval)
+            interval = null
+          }
+
+          el.addEventListener('mousedown', () => {
+            startTime = new Date()
+            clearInterval(interval)
+            interval = setInterval(handler, 100)
+
+            once(document, 'mouseup', clear)
+          })
+        }
+      }
+    },
 
     components: { Icon },
 
@@ -80,6 +109,7 @@
         handler (val) {
           this.upDisabled = sum(val, this.step) > this.max
           this.downDisabled = sum(val, -this.step) < this.min
+          this.input = val
         }
       }
     },
@@ -115,7 +145,6 @@
         let val = sum(this.value, this.step)
         if (val > this.max) return  // val = this.max
         this.setValue(val)
-        this.input = val
       },
 
       down () {
@@ -123,7 +152,6 @@
         let val = sum(this.value, -this.step)
         if (val < this.min) return  // val = this.min
         this.setValue(val)
-        this.input = val
       }
     },
 

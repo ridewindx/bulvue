@@ -20,8 +20,11 @@
       <Slider v-model="value12" range></Slider>
       </Col>
       <Col>
+      <Slider v-model="value16" :step="10" show-stops></Slider>
+      <Slider v-model="value17" :step="10" show-stops range disabled></Slider>
       </Col>
       <Col>
+      <Slider v-model="value18" show-input disabled></Slider>
       </Col>
       <Col>
       </Col>
@@ -44,7 +47,10 @@
         value2: 1,
         value6: 1,
         value11: 25,
-        value12: [20, 50]
+        value12: [20, 50],
+        value16: 30,
+        value17: [20, 50],
+        value18: 25
       }
     },
 

@@ -1,7 +1,12 @@
 <template>
   <div class="slider">
 
-    <div class="slider-wrap" ref="slider" @click.self="handleClick">
+    <InputNumber class="slider-input" v-if="!range && showInput" @input="handleInput"
+                 :min="min" :max="max" :step="step" :value="value" :disabled="disabled">
+    </InputNumber>
+
+    <div class="slider-wrap" :class="{ 'has-input': !range && showInput, 'disabled': disabled }"
+         ref="slider" @click.self="handleClick">
 
       <template v-if="showStops">
         <div class="slider-stop" v-for="item in stops"
@@ -10,27 +15,26 @@
 
       <div class="slider-bar" :style="barStyle" @click.self="handleClick"></div>
 
-      <div class="slider-button-wrap" @mousedown.prevent="firstDragStart" :style="{ 'z-index': firstHeld ? 1 : 0, left: firstPos + '%' }">
-        <Tooltip ref="first"
-                 :content="formatTip(firstValue)" :disabled="showTip === 'never'"
-                 :always="showTip === 'always' || firstHeld" placement="top">
+      <div class="slider-button-wrap" @mousedown.prevent="firstDragStart"
+           :style="{ 'z-index': firstHeld ? 1 : 0, left: firstPos + '%' }">
+        <Tooltip ref="first" :content="formatTip(firstValue)"
+                 :disabled="showTip === 'never'" placement="top"
+                 :always="showTip === 'always' || firstHeld">
           <div class="slider-button" :class="{ dragging: firstHeld }"></div>
         </Tooltip>
       </div>
 
-      <div class="slider-button-wrap" @mousedown.prevent="secondDragStart" :style="{ 'z-index': secondHeld ? 1 : 0, left: secondPos + '%' }">
-        <Tooltip ref="second" v-if="range"
-                 :content="formatTip(secondValue)" :disabled="showTip === 'never'"
-                 :always="showTip === 'always' || secondHeld" placement="top">
+      <div class="slider-button-wrap" v-if="range"
+           @mousedown.prevent="secondDragStart"
+           :style="{ 'z-index': secondHeld ? 1 : 0, left: secondPos + '%' }">
+        <Tooltip ref="second" :content="formatTip(secondValue)"
+                 :disabled="showTip === 'never'" placement="top"
+                 :always="showTip === 'always' || secondHeld">
           <div class="slider-button" :class="{ dragging: secondHeld }"></div>
         </Tooltip>
       </div>
 
     </div>
-
-    <InputNumber v-if="!range && showInput" @input="handleInput"
-                 :min="min" :max="max" :step="step" :value="value" :disabled="disabled">
-    </InputNumber>
 
   </div>
 </template>
@@ -144,14 +148,20 @@
       handleClick (e) {
         if (this.disabled) return
 
-        this.sliderWidth = this.$refs.slider.clientWidth
-        const newPos = (e.clientX - this.$refs.slider.getBoundingClientRect().left) / this.sliderWidth * 100
+        const diff = e.clientX - this.$refs.slider.getBoundingClientRect().left
+        const sliderWidth = this.$refs.slider.clientWidth
+        const newPos = diff / sliderWidth * 100
 
-        if (this.range && newPos > this.firstPos && (newPos - this.firstPos) > (this.secondPos - newPos)) {
-          this.draggingNo = SECOND
-        } else {
+        if (!this.range) {
           this.draggingNo = FIRST
+        } else if (newPos * 2 > this.firstPos + this.secondPos) {
+          if (this.firstPos > this.secondPos) this.draggingNo = FIRST
+          else this.draggingNo = SECOND
+        } else {
+          if (this.firstPos > this.secondPos) this.draggingNo = SECOND
+          else this.draggingNo = FIRST
         }
+
         this.changePos(newPos)
         this.draggingNo = null
       },
@@ -164,11 +174,15 @@
       },
 
       firstDragStart (e) {
+        if (this.disabled) return
+
         this.draggingNo = FIRST
         this.dragStart(e)
       },
 
       secondDragStart (e) {
+        if (this.disabled) return
+
         this.draggingNo = SECOND
         this.dragStart(e)
       },
@@ -179,17 +193,20 @@
         this.startFirstPos = this.firstPos
         this.startSecondPos = this.secondPos
 
-        window.addEventListener('mousemove', this.dragging)
-        window.addEventListener('mouseup', this.dragEnd)
+        window.addEventListener('mousemove', this.dragging, false)
+        window.addEventListener('mouseup', this.dragEnd, false)
       },
 
       dragEnd () {
-        if (this.draggingNo === FIRST) this.$refs.first.hidePopper()
-        else if (this.draggingNo === SECOND) this.$refs.second.hidePopper()
-        this.draggingNo = null
+        let tooltip
+        if (this.draggingNo === FIRST) tooltip = this.$refs.first
+        else if (this.draggingNo === SECOND) tooltip = this.$refs.second
 
-        window.removeEventListener('mousemove', this.dragging)
-        window.removeEventListener('mouseup', this.dragEnd)
+        this.draggingNo = null
+        this.$nextTick(() => { tooltip.hidePopper() })
+
+        window.removeEventListener('mousemove', this.dragging, false)
+        window.removeEventListener('mouseup', this.dragEnd, false)
       },
 
       dragging (e) {
@@ -209,6 +226,7 @@
       changePos (newPos) {
         const currentValue = Math.round(newPos / 100 * (this.max - this.min) / this.step) * this.step + this.min
         const pos = (currentValue - this.min) / (this.max - this.min) * 100
+
         if (this.draggingNo === FIRST) {
           this.firstPos = pos
           this.firstValue = currentValue
@@ -254,15 +272,33 @@
 <style lang="scss">
   @import "~bulma/sass/utilities/_all";
 
+  $input-width: 6rem;
+
   .slider {
+    &:before, &:after {
+      clear: right;
+      content: " ";
+      display: table;
+    }
+
+    &-input {
+      width: $input-width;
+      float: right;
+    }
+
     &-wrap {
       position: relative;
-      width: 100%;
+      display: block;
+      width: auto;
       height: 0.25rem;
       margin: 1rem 0;
       background-color: $grey-lighter;
       border-radius: $radius-small;
       cursor: pointer;
+
+      &.has-input {
+        margin-right: $input-width+1rem;
+      }
     }
 
     &-button-wrap {
@@ -319,6 +355,21 @@
       border-radius: 50%;
       background-color: $grey-light;
       transform: translateX(-50%);
+    }
+
+    &-wrap.disabled {
+      cursor: not-allowed;
+
+      .slider-button {
+        cursor: not-allowed;
+        border-color: $grey-light;
+        transition: none;
+        transform: none;
+      }
+
+      .slider-bar {
+        background-color: $grey-light;
+      }
     }
   }
 </style>
