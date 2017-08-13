@@ -29,6 +29,20 @@
       <Col>
       </Col>
     </Cols>
+
+
+    <Cols>
+      <Col>
+        <Rate v-model="value21"></Rate>
+      </Col>
+      <Col>
+        <Rate v-model="value21" disabled></Rate>
+      </Col>
+      <Col>
+      </Col>
+      <Col>
+      </Col>
+    </Cols>
   </div>
 </template>
 
@@ -37,6 +51,7 @@
   import Col from './grid/column'
   import InputNumber from './elements/form/input-number'
   import Slider from './components/slider'
+  import Rate from './elements/form/rate'
 
   export default {
     name: 'app',
@@ -50,7 +65,8 @@
         value12: [20, 50],
         value16: 30,
         value17: [20, 50],
-        value18: 25
+        value18: 25,
+        value21: 1.1
       }
     },
 
@@ -64,7 +80,8 @@
       Cols,
       Col,
       InputNumber,
-      Slider
+      Slider,
+      Rate
     }
   }
 </script>
