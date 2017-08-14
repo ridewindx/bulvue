@@ -1,9 +1,7 @@
 <template>
   <li class="menu-item-group">
     <div class="menu-item-group-title">{{ title }}</div>
-    <ul>
-      <slot></slot>
-    </ul>
+    <ul><slot></slot></ul>
   </li>
 </template>
 

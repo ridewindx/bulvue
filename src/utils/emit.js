@@ -12,6 +12,9 @@ export default {
     }
     if (parent) {
       parent.$emit(eventName, ...params)
+      return true
+    } else {
+      return false
     }
   },
 
