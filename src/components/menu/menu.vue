@@ -24,7 +24,10 @@
       submenuModes: {
         type: Array,
         validator (v) {
-          return ['inline', 'dropdown'].indexOf(v) > -1
+          for (const item of v) {
+            if (['inline', 'dropdown'].indexOf(item) < 0) return false
+          }
+          return v.length >= 1
         },
         default () {
           return ['dropdown']
@@ -155,6 +158,8 @@
     }
 
     &-submenu {
+      position: relative;
+
       &-title .icon:last-child {
         display: inline-block;
         font-size: 1rem;

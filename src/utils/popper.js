@@ -9,15 +9,22 @@ export default {
       },
       default: 'bottom'
     },
-    offset: Number,
+    offset: {
+      type: Number,
+      default: 0
+    },
     conf: {
       type: Object,
       default () {
         return {
-          gpuAcceleration: false,
-          boundariesElement: 'body',
-          boundariesPadding: 0,
-          forceAbsolute: true
+          modifiers: {
+            computeStyle: {
+              gpuAcceleration: false
+            },
+            preventOverflow: {
+              padding: 0
+            }
+          }
         }
       }
     },
@@ -55,17 +62,20 @@ export default {
       this.arbiter = new Popper(reference, popper, {
         ...options,
         onCreate: popper => {
-          this.resetTransformOrigin(popper)
+          this.resetTransformOrigin()
           this.$nextTick(this.update())
         }
       })
     },
 
-    resetTransformOrigin (popper) {
-      let placementMap = {top: 'bottom', bottom: 'top', left: 'right', right: 'left'}
-      let placement = popper.placement
+    resetTransformOrigin () {
+      const popper = this.popper || this.$refs.popper
+      if (!popper) return
+
+      const placementMap = {top: 'bottom', bottom: 'top', left: 'right', right: 'left'}
+      let placement = popper.getAttribute('x-placement').split('-')[0]
       let origin = placementMap[placement]
-      popper.styles.transformOrigin = ['top', 'bottom'].indexOf(placement) > -1 ? `center ${origin}` : `${origin} center`
+      popper.style.transformOrigin = ['top', 'bottom'].indexOf(placement) > -1 ? `center ${origin}` : `${origin} center`
     }
   },
 

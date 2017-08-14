@@ -7,14 +7,14 @@
       <Icon icon="fa-angle-down"></Icon>
     </div>
 
-    <CollapseTransition v-if="mode === 'vertical'">
+    <CollapseTransition v-if="renderMode === 'inline'">
       <ul v-show="opened"><slot></slot></ul>
     </CollapseTransition>
 
     <transition name="slide-up" v-else>
-      <Dropdown v-show="opened">
+      <div class="menu-submenu-dropdown" ref="popper" v-show="opened">
         <ul><slot></slot></ul>
-      </Dropdown>
+      </div>
     </transition>
 
   </li>
@@ -24,18 +24,25 @@
   import Emit from '../../utils/emit.js'
   import Icon from '../../elements/icon'
   import CollapseTransition from '../../utils/collapse-transition'
-  import Dropdown from './dropdown'
+  import Popper from '../../utils/popper'
 
   export default {
     name: 'Submenu',
 
-    mixins: [{ methods: Emit }],
+    mixins: [ { methods: Emit }, Popper ],
 
-    components: { Icon, CollapseTransition, Dropdown },
+    components: { Icon, CollapseTransition },
 
     props: {
       name: [String, Number],
-      disabled: Boolean
+      disabled: Boolean,
+      mode: {
+        type: String,
+        validator (v) {
+          return ['inline', 'dropdown'].indexOf(v) > -1
+        },
+        default: 'dropdown'
+      }
     },
 
     data () {
@@ -54,15 +61,26 @@
         }
       },
 
-      mode () {
-        return this.$parent.mode
+      renderMode () {
+        if (this.$parent.$options.name === 'Menu') {
+          if (this.$parent.mode === 'horizontal') return 'dropdown'
+          return 'inline'
+        } else {
+          return this.mode
+        }
+      }
+    },
+
+    watch: {
+      opened (val) {
+        this.visible = val
       }
     },
 
     methods: {
       handleMouseenter () {
         if (this.disabled) return
-        if (this.mode === 'vertical') return
+        if (this.renderMode === 'inline') return
 
         clearTimeout(this.timer)
         this.timer = setTimeout(() => {
@@ -72,7 +90,7 @@
 
       handleMouseleave () {
         if (this.disabled) return
-        if (this.mode === 'vertical') return
+        if (this.renderMode === 'inline') return
 
         clearTimeout(this.timer)
         this.timer = setTimeout(() => {
@@ -82,7 +100,7 @@
 
       handleClick () {
         if (this.disabled) return
-        if (this.mode === 'horizontal') return
+        if (this.renderMode === 'dropdown') return
 
         if (this.accordion) {
           this.$parent.$children.forEach(item => {
@@ -99,8 +117,11 @@
     mounted () {
       this.accordion = this.$parent.accordion
 
+      if (this.$parent.$options.name === 'Menu') this.placement = 'bottom'
+      else this.placement = 'right-start'
+
       this.$on('selected', name => {
-        if (this.mode === 'horizontal') this.opened = false
+        if (this.renderMode === 'dropdown') this.opened = false
         this.emitUp('Menu', 'selected', name)
       })
 
@@ -110,5 +131,4 @@
       })
     }
   }
-
 </script>
