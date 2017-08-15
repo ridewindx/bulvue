@@ -14,7 +14,7 @@
         <Submenu name="3">
           <template slot="title">
             <Icon icon="fa-bar-chart"></Icon>
-            统计分析
+            <span>统计分析</span>
           </template>
           <MenuItemGroup title="使用">
             <MenuItem name="3-1">新增和启动</MenuItem>
@@ -24,6 +24,39 @@
           <MenuItemGroup title="留存">
             <MenuItem name="3-4">用户留存</MenuItem>
             <MenuItem name="3-5">流失用户</MenuItem>
+
+            <Submenu name="31">
+              <template slot="title">
+                <Icon icon="fa-bar-chart"></Icon>
+                <span>统计分析</span>
+              </template>
+              <MenuItemGroup title="使用">
+                <MenuItem name="31-1">新增和启动</MenuItem>
+                <MenuItem name="31-2">活跃分析</MenuItem>
+                <MenuItem name="31-3">时段分析</MenuItem>
+              </MenuItemGroup>
+              <MenuItemGroup title="留存">
+                <MenuItem name="31-4">用户留存</MenuItem>
+                <MenuItem name="31-5">流失用户</MenuItem>
+
+                <MenuItem name="31-6">用户留存</MenuItem>
+                <MenuItem name="31-7">流失用户</MenuItem>
+
+                <Submenu name="32" mode="inline">
+                  <template slot="title">
+                    <Icon icon="fa-bar-chart"></Icon>
+                    统计分析
+                  </template>
+                    <MenuItem name="32-1">新增和启动新增和启动</MenuItem>
+                    <MenuItem name="32-2">活跃分析</MenuItem>
+                    <MenuItem name="32-3">时段分析</MenuItem>
+                    <MenuItem name="32-4">用户留存</MenuItem>
+                    <MenuItem name="32-5">流失用户</MenuItem>
+                </Submenu>
+
+              </MenuItemGroup>
+            </Submenu>
+
           </MenuItemGroup>
         </Submenu>
         <MenuItem name="4">
@@ -33,7 +66,7 @@
       </Menu>
 
       </Col>
-      <Menu style="width: 240px">
+      <Menu style="width: 240px" accordion>
         <Submenu name="1">
           <template slot="title">
             <Icon icon="fa-book"></Icon>
@@ -65,7 +98,8 @@
             <MenuItem name="3-4">用户留存</MenuItem>
             <MenuItem name="3-5">流失用户</MenuItem>
 
-            <Submenu name="31">
+            <Submenu name="31" mode="inline">
+            <!--<Submenu name="31">-->
               <template slot="title">
                 <Icon icon="fa-bar-chart"></Icon>
                 统计分析
@@ -78,6 +112,19 @@
               <MenuItemGroup title="留存">
                 <MenuItem name="31-4">用户留存</MenuItem>
                 <MenuItem name="31-5">流失用户</MenuItem>
+
+                <Submenu name="31">
+                  <template slot="title">
+                    <Icon icon="fa-bar-chart"></Icon>
+                    统计分析
+                  </template>
+                  <MenuItem name="31-1">新增和启动新增和启动</MenuItem>
+                  <MenuItem name="31-2">活跃分析</MenuItem>
+                  <MenuItem name="31-3">时段分析</MenuItem>
+                  <MenuItem name="31-4">用户留存</MenuItem>
+                  <MenuItem name="31-5">流失用户</MenuItem>
+                </Submenu>
+
               </MenuItemGroup>
             </Submenu>
 

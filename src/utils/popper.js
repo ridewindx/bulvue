@@ -10,7 +10,7 @@ export default {
       default: 'bottom'
     },
     offset: {
-      type: Number,
+      type: [Number, String],
       default: 0
     },
     conf: {
@@ -51,27 +51,31 @@ export default {
         return
       }
 
-      const popper = this.popper || this.$refs.popper
-      const reference = this.reference || this.$refs.reference
+      let popper = this.popper || this.$refs.popper
+      if (popper && popper.$el) popper = popper.$el
+      let reference = this.reference || this.$refs.reference
+      if (reference && reference.$el) reference = reference.$el
+
       if (!popper || !reference) return
+
+      // document.body.appendChild(popper)
 
       const options = this.conf
       options.placement = this.placement
-      options.offset = this.offset
+      options.modifiers.offset = {
+        offset: this.offset
+      }
 
       this.arbiter = new Popper(reference, popper, {
         ...options,
-        onCreate: popper => {
-          this.resetTransformOrigin()
+        onCreate: () => {
+          this.resetTransformOrigin(popper)
           this.$nextTick(this.update())
         }
       })
     },
 
-    resetTransformOrigin () {
-      const popper = this.popper || this.$refs.popper
-      if (!popper) return
-
+    resetTransformOrigin (popper) {
       const placementMap = {top: 'bottom', bottom: 'top', left: 'right', right: 'left'}
       let placement = popper.getAttribute('x-placement').split('-')[0]
       let origin = placementMap[placement]
@@ -81,6 +85,7 @@ export default {
 
   beforeDestroy () {
     if (this.arbiter) {
+      // document.body.removeChild(this.arbiter.popper)
       this.arbiter.destroy()
       this.arbiter = null
     }

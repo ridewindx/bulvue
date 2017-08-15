@@ -10,6 +10,16 @@
   export default {
     name: 'Dropdown',
 
-    mixins: [ Popper ]
+    mixins: [ Popper ],
+
+    props: {
+      value: Boolean
+    },
+
+    watch: {
+      value (val) {
+        this.visible = val
+      }
+    }
   }
 </script>

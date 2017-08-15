@@ -1,10 +1,11 @@
 <template>
-  <li class="menu-item" :class="classes" @click="handleClick">
+  <li class="menu-item" :class="classes" :style="styles" @click="handleClick">
     <slot></slot>
   </li>
 </template>
 
 <script>
+  import { findParentComponent } from '../../utils/find'
   import Emit from '../../utils/emit.js'
 
   export default {
@@ -19,7 +20,8 @@
 
     data () {
       return {
-        active: false
+        active: false,
+        inlineLevel: -1
       }
     },
 
@@ -28,6 +30,14 @@
         return {
           active: this.active,
           disabled: this.disabled
+        }
+      },
+
+      styles () {
+        if (this.inlineLevel >= 0) {
+          return {
+            'padding-left': (this.inlineLevel * 1.5 + 1.5) + 'rem'
+          }
         }
       }
     },
@@ -38,12 +48,16 @@
 
         const emitted = this.emitUp('Submenu', 'selected', this.name)
         if (!emitted) this.emitUp('Menu', 'selected', this.name)
+      },
+
+      getInlineLevel () {
+        let submenu = findParentComponent(this, 'Submenu')
+        if (submenu) this.inlineLevel = submenu.inlineLevel
       }
     },
 
     mounted () {
       this.$on('updated', name => {
-        console.log('activeName', name, ', this.name', this.name)
         if (this.name === name) {
           this.active = true
           this.emitUp('Submenu', 'updated', true)

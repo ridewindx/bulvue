@@ -24,9 +24,9 @@ export default {
 
       if (name === componentName) {
         child.$emit(eventName, ...params)
-      } else {
-        emitDown.call(child, componentName, eventName, ...params)
       }
+
+      emitDown.call(child, componentName, eventName, ...params)
     })
   }
 }
